@@ -1,14 +1,14 @@
 <template>
   <div class="sso-callback">
     <div class="loading" v-if="isLoading">
-      <p>Completing login...</p>
+      <p>Завершаем вход...</p>
     </div>
     <div class="error" v-else-if="hasError">
-      <h2>Login failed</h2>
-      <button @click="goHome" class="btn-primary">Back to home</button>
+      <h2>Не удалось войти</h2>
+      <button @click="goHome" class="btn-primary">На главную</button>
     </div>
     <div class="success" v-else-if="isSuccess">
-      <p>Success! Redirecting...</p>
+      <p>Успешно! Перенаправляем...</p>
     </div>
   </div>
 </template>
@@ -19,6 +19,7 @@ import { useRouter } from 'vue-router'
 import { SsoService } from '@bogdanovmn/ssofw'
 import { authStore } from '@/stores/auth'
 import { profileStore } from '@/stores/profile'
+import { logout } from '@/logout'
 
 const router = useRouter()
 const ssoService = inject<SsoService>('ssoService')!
@@ -58,6 +59,7 @@ async function processCallback(): Promise<void> {
   } catch (err) {
     console.error('SSO callback error:', err)
     hasError.value = true
+    logout(ssoService)
   } finally {
     auth.update()
     isLoading.value = false
@@ -81,9 +83,11 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 50vh;
+  min-height: 50vh;
   font-size: 1.2rem;
   color: #666;
+  text-align: center;
+  padding: 1rem;
 }
 
 .error h2 {
@@ -100,5 +104,6 @@ onMounted(() => {
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  min-height: 44px;
 }
 </style>

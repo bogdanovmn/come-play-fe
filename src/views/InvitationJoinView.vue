@@ -1,10 +1,10 @@
 <template>
   <div class="invitation-join">
-    <div v-if="joining" class="loading">Joining club...</div>
+    <div v-if="joining" class="loading">Вступаем в клуб...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else class="success">
-      <h2>You've been added to the club!</h2>
-      <router-link to="/clubs/member" class="btn-primary">Go to My Clubs</router-link>
+      <h2>Вы добавлены в клуб!</h2>
+      <router-link to="/clubs/member" class="btn-primary">К моим клубам</router-link>
     </div>
   </div>
 </template>
@@ -25,7 +25,7 @@ onMounted(async () => {
     joining.value = false
   } catch (e: any) {
     joining.value = false
-    error.value = e.response?.data?.message || 'Failed to join club'
+    error.value = e.response?.data?.message || 'Не удалось вступить в клуб'
   }
 })
 </script>
@@ -33,7 +33,7 @@ onMounted(async () => {
 <style scoped>
 .invitation-join {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 3rem 1rem;
 }
 
 .btn-primary {
@@ -44,6 +44,7 @@ onMounted(async () => {
   text-decoration: none;
   border-radius: 8px;
   margin-top: 1rem;
+  min-height: 48px;
 }
 
 .loading { color: #888; }

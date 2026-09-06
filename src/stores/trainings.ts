@@ -37,13 +37,12 @@ export const trainingsStore = defineStore('trainingsStore', () => {
 
   async function create(
     clubId: string,
-    sportType: string,
     dayOfWeek: api.DayOfWeek,
     startTime: string,
     endTime: string,
     maxPlayers: number
   ): Promise<TrainingBrief> {
-    const training = await api.createTraining(clubId, sportType, dayOfWeek, startTime, endTime, maxPlayers)
+    const training = await api.createTraining(clubId, dayOfWeek, startTime, endTime, maxPlayers)
     trainings.value.push(training)
     return training
   }

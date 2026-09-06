@@ -37,10 +37,10 @@ export const clubsStore = defineStore('clubsStore', () => {
     }
   }
 
-  async function create(name: string): Promise<ClubBrief> {
+  async function create(name: string, sportTypeId: number): Promise<ClubBrief> {
     isCreating.value = true
     try {
-      const club = await api.createClub(name)
+      const club = await api.createClub(name, sportTypeId)
       ownedClubs.value.push(club)
       return club
     } finally {
@@ -48,10 +48,14 @@ export const clubsStore = defineStore('clubsStore', () => {
     }
   }
 
-  async function update(clubId: string, name: string): Promise<void> {
-    await api.updateClub(clubId, name)
+  async function update(clubId: string, name: string, sportTypeId: number): Promise<void> {
+    await api.updateClub(clubId, name, sportTypeId)
     if (currentClub.value?.id === clubId) {
-      currentClub.value = { ...currentClub.value, name }
+      currentClub.value = {
+        ...currentClub.value,
+        name,
+        sportTypeId
+      }
     }
   }
 

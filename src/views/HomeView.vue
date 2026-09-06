@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <h1>Come Play</h1>
-    <p>Service for signing up for sports training: badminton, volleyball, tennis, football and more.</p>
+    <p>Сервис записи на игровые тренировки: бадминтон, волейбол, теннис, футбол и т.д.</p>
     <div v-if="!auth.isAuthenticated" class="cta">
-      <button class="btn-primary" @click="handleLogin">Login to Get Started</button>
+      <button class="btn-primary" @click="handleLogin">Войти</button>
     </div>
     <div v-else class="cta">
-      <router-link to="/clubs" class="btn-primary">My Clubs</router-link>
+      <router-link to="/clubs" class="btn-primary">Мои клубы</router-link>
     </div>
   </div>
 </template>
@@ -26,16 +26,16 @@ function handleLogin() {
 <style scoped>
 .home {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 3rem 1rem;
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
 p {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #666;
   margin-bottom: 2rem;
 }
@@ -54,9 +54,20 @@ p {
   border-radius: 8px;
   font-size: 1.1rem;
   cursor: pointer;
+  min-height: 48px;
 }
 
 .btn-primary:hover {
   background: #c73652;
+}
+
+@media (min-width: 768px) {
+  .home {
+    padding: 4rem 2rem;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
 }
 </style>

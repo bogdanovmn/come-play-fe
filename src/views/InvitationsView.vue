@@ -1,29 +1,29 @@
 <template>
   <div class="invitations">
     <div class="header">
-      <h1>Invitations</h1>
-      <button class="btn-primary" @click="showCreate = true">New Invitation</button>
+      <h1>Приглашения</h1>
+      <button class="btn-primary" @click="showCreate = true">Новое приглашение</button>
     </div>
 
-    <div v-if="invitationList.length === 0" class="empty">No invitations yet.</div>
+    <div v-if="invitationList.length === 0" class="empty">Пока нет приглашений.</div>
 
     <div v-else class="invitation-list">
       <div v-for="inv in invitationList" :key="inv.id" class="invitation-card">
         <div>
           <strong>{{ inv.name }}</strong>
-          <span class="joined">{{ inv.joinedCount }} joined</span>
+          <span class="joined">{{ inv.joinedCount }} присоед.</span>
         </div>
-        <button class="btn-copy" @click="copyLink(inv.id)">Copy Link</button>
+        <button class="btn-copy" @click="copyLink(inv.id)">Копировать</button>
       </div>
     </div>
 
     <div v-if="showCreate" class="modal-overlay" @click.self="showCreate = false">
       <div class="modal">
-        <h2>New Invitation</h2>
-        <input v-model="newName" placeholder="Invitation name" @keyup.enter="handleCreate" />
+        <h2>Новое приглашение</h2>
+        <input v-model="newName" placeholder="Название приглашения" @keyup.enter="handleCreate" />
         <div class="modal-actions">
-          <button @click="showCreate = false">Cancel</button>
-          <button class="btn-primary" @click="handleCreate" :disabled="!newName.trim()">Create</button>
+          <button @click="showCreate = false">Отмена</button>
+          <button class="btn-primary" @click="handleCreate" :disabled="!newName.trim()">Создать</button>
         </div>
       </div>
     </div>
@@ -63,16 +63,22 @@ function copyLink(invitationId: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
+h1 { font-size: 1.5rem; }
+
 .btn-primary {
-  padding: 0.5rem 1.5rem;
+  padding: 0.55rem 1.2rem;
   background: #e94560;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  min-height: 40px;
+  font-size: 1rem;
 }
 
 .invitation-list {
@@ -88,20 +94,24 @@ function copyLink(invitationId: string) {
   padding: 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
+  gap: 0.5rem;
 }
 
 .joined {
-  margin-left: 1rem;
+  display: block;
+  margin-top: 0.2rem;
   color: #888;
   font-size: 0.9rem;
 }
 
 .btn-copy {
-  padding: 0.3rem 0.8rem;
+  padding: 0.4rem 0.9rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
   background: white;
+  min-height: 40px;
+  white-space: nowrap;
 }
 
 .empty { text-align: center; padding: 3rem; color: #888; }
@@ -113,34 +123,40 @@ function copyLink(invitationId: string) {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 1rem;
+  z-index: 100;
 }
 
 .modal {
   background: white;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 8px;
-  width: 400px;
+  width: 100%;
+  max-width: 420px;
 }
 
 .modal input {
   width: 100%;
   padding: 0.6rem;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+  min-height: 44px;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .modal-actions button {
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+  min-height: 40px;
 }
 </style>

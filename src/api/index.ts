@@ -5,12 +5,16 @@ import { authApi, makeApiRequest } from './common'
 export interface ClubBrief {
   id: string
   name: string
+  sportTypeId: number
+  sportTypeName: string
   membersCount: number
 }
 
 export interface Club {
   id: string
   name: string
+  sportTypeId: number
+  sportTypeName: string
   ownerId: string
   closed: boolean
   createdAt: string
@@ -32,7 +36,6 @@ export interface Invitation {
 
 export interface TrainingBrief {
   id: string
-  sportType: string
   dayOfWeek: string
   startTime: string
   endTime: string
@@ -60,6 +63,11 @@ export interface Comment {
   userId: string
   text: string
   createdAt: string
+}
+
+export interface SportType {
+  id: number
+  name: string
 }
 
 export interface UserProfile {
@@ -106,12 +114,12 @@ export async function getClub(clubId: string): Promise<Club> {
   return authApi.get<Club>(`/clubs/${clubId}`)
 }
 
-export async function createClub(name: string): Promise<ClubBrief> {
-  return authApi.post<ClubBrief>('/clubs', { name })
+export async function createClub(name: string, sportTypeId: number): Promise<ClubBrief> {
+  return authApi.post<ClubBrief>('/clubs', { name, sportTypeId })
 }
 
-export async function updateClub(clubId: string, name: string): Promise<void> {
-  return authApi.put(`/clubs/${clubId}`, { name })
+export async function updateClub(clubId: string, name: string, sportTypeId: number): Promise<void> {
+  return authApi.put(`/clubs/${clubId}`, { name, sportTypeId })
 }
 
 export async function closeClub(clubId: string): Promise<void> {
@@ -140,14 +148,13 @@ export async function listTrainings(clubId: string): Promise<TrainingBrief[]> {
 
 export async function createTraining(
   clubId: string,
-  sportType: string,
   dayOfWeek: DayOfWeek,
   startTime: string,
   endTime: string,
   maxPlayers: number
 ): Promise<TrainingBrief> {
   return authApi.post<TrainingBrief>(`/clubs/${clubId}/trainings`, {
-    sportType, dayOfWeek, startTime, endTime, maxPlayers
+    dayOfWeek, startTime, endTime, maxPlayers
   })
 }
 
@@ -211,6 +218,16 @@ export async function removeFriend(friendId: string): Promise<void> {
 
 export async function searchUsers(term: string): Promise<UserProfile[]> {
   return authApi.get<UserProfile[]>('/users/search', { term })
+}
+
+// ===================== SPORT TYPE API =====================
+
+export async function listSportTypes(): Promise<SportType[]> {
+  return authApi.get<SportType[]>('/sport-types')
+}
+
+export async function createSportType(name: string): Promise<SportType> {
+  return authApi.post<SportType>('/sport-types', { name })
 }
 
 // ===================== HISTORY API =====================

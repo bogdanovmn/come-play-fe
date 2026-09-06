@@ -1,32 +1,32 @@
 <template>
   <div class="profile">
-    <h1>Profile</h1>
+    <h1>Профиль</h1>
 
     <div class="section">
-      <h2>Display Name</h2>
+      <h2>Отображаемое имя</h2>
       <div class="edit-name">
-        <input v-model="displayName" placeholder="Your name" />
-        <button @click="handleSaveName" :disabled="!displayName.trim()">Save</button>
+        <input v-model="displayName" placeholder="Ваше имя" />
+        <button @click="handleSaveName" :disabled="!displayName.trim()">Сохранить</button>
       </div>
     </div>
 
     <div class="section">
-      <h2>Friends</h2>
+      <h2>Друзья</h2>
       <div class="add-friend">
-        <input v-model="searchTerm" placeholder="Search by name..." @input="handleSearch" />
+        <input v-model="searchTerm" placeholder="Поиск по имени..." @input="handleSearch" />
         <div v-if="searchResults.length > 0" class="search-results">
           <div v-for="u in searchResults" :key="u.id" class="search-item">
             <span>{{ u.displayName }}</span>
-            <button @click="handleAddFriend(u.id)">Add</button>
+            <button @click="handleAddFriend(u.id)">Добавить</button>
           </div>
         </div>
       </div>
 
-      <div v-if="profile.friends.length === 0" class="empty">No friends yet.</div>
+      <div v-if="profile.friends.length === 0" class="empty">Пока нет друзей.</div>
       <div v-else class="friend-list">
         <div v-for="f in profile.friends" :key="f.id" class="friend-item">
           <span>{{ f.displayName }}</span>
-          <button class="btn-remove" @click="handleRemoveFriend(f.id)">Remove</button>
+          <button class="btn-remove" @click="handleRemoveFriend(f.id)">Удалить</button>
         </div>
       </div>
     </div>
@@ -80,6 +80,11 @@ async function handleRemoveFriend(friendId: string) {
 </script>
 
 <style scoped>
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 .section {
   margin-bottom: 2rem;
 }
@@ -92,22 +97,27 @@ async function handleRemoveFriend(friendId: string) {
 .edit-name {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .edit-name input {
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  width: 300px;
+  flex: 1;
+  min-width: 200px;
+  min-height: 44px;
 }
 
 .edit-name button {
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1.2rem;
   background: #e94560;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  min-height: 44px;
+  font-size: 1rem;
 }
 
 .add-friend {
@@ -115,10 +125,11 @@ async function handleRemoveFriend(friendId: string) {
 }
 
 .add-friend input {
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  width: 300px;
+  width: 100%;
+  min-height: 44px;
 }
 
 .search-results {
@@ -132,16 +143,18 @@ async function handleRemoveFriend(friendId: string) {
 .search-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border-bottom: 1px solid #eee;
+  align-items: center;
 }
 
 .search-item button {
-  padding: 0.2rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
   background: white;
+  min-height: 36px;
 }
 
 .friend-list {
@@ -153,17 +166,19 @@ async function handleRemoveFriend(friendId: string) {
 .friend-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border-bottom: 1px solid #eee;
+  align-items: center;
 }
 
 .btn-remove {
-  padding: 0.2rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border: 1px solid #c00;
   color: #c00;
   border-radius: 4px;
   cursor: pointer;
   background: white;
+  min-height: 36px;
 }
 
 .empty { color: #888; }

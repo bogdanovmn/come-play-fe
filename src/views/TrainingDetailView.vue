@@ -1,71 +1,77 @@
 <template>
-  <div class="training-detail" v-if="!enrollments.isLoading">
+  <div class="training-detail" v-if="enrollments.isLoading || profile.profile === null">
+    <div class="loading">Загрузка...</div>
+  </div>
+  <div class="training-detail" v-else>
     <div class="header">
-      <h1>Training Slot</h1>
+      <h1>Тренировка</h1>
       <div class="actions">
-        <button v-if="!isEnrolled" class="btn-primary" @click="handleEnroll">Sign Up</button>
-        <button v-else class="btn-danger" @click="handleUnenroll">Cancel</button>
+        <button v-if="!isEnrolled" class="btn-primary" @click="handleEnroll">Записаться</button>
+        <button v-else class="btn-danger" @click="handleUnenroll">Отменить запись</button>
       </div>
     </div>
 
     <div class="section">
-      <h2>Signed Up ({{ enrollments.enrollments.length }})</h2>
-      <div v-if="enrollments.enrollments.length === 0" class="empty">No one signed up yet.</div>
+      <h2>Записаны ({{ enrollments.enrollments.length }})</h2>
+      <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
       <div v-else class="enrollment-list">
         <div v-for="e in enrollments.enrollments" :key="e.userId" class="enrollment-item">
-          <span>{{ e.userId }}</span>
-          <span class="by" v-if="e.enrolledBy !== e.userId">by {{ e.enrolledBy }}</span>
+          <span>{{ displayName(e.userId) }}</span>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2>Friends</h2>
-      <div v-if="profile.friends.length === 0" class="empty">No friends added yet.</div>
+      <h2>Друзья</h2>
+      <div v-if="profile.friends.length === 0" class="empty">Друзей пока нет.</div>
       <div v-else class="friend-list">
         <div v-for="f in profile.friends" :key="f.id" class="friend-item">
           <span>{{ f.displayName }}</span>
-          <button @click="handleEnrollFriend(f.id)">Sign Up</button>
+          <button @click="handleEnrollFriend(f.id)">Записать</button>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2>Comments</h2>
+      <h2>Комментарии</h2>
       <div class="comment-list">
         <div v-for="c in enrollments.comments" :key="c.id" class="comment-item">
-          <strong>{{ c.userId }}:</strong> {{ c.text }}
+          <strong>{{ displayName(c.userId) }}:</strong> {{ c.text }}
         </div>
       </div>
       <div class="comment-input">
-        <input v-model="newComment" placeholder="Add a comment..." @keyup.enter="handleComment" />
-        <button @click="handleComment" :disabled="!newComment.trim()">Send</button>
+        <input v-model="newComment" placeholder="Написать комментарий..." @keyup.enter="handleComment" />
+        <button @click="handleComment" :disabled="!newComment.trim()">Отправить</button>
       </div>
     </div>
   </div>
-  <div v-else class="loading">Loading...</div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { enrollmentsStore } from '@/stores/enrollments'
 import { profileStore } from '@/stores/profile'
-import { authStore } from '@/stores/auth'
 
 const props = defineProps<{ slotId: string }>()
 const enrollments = enrollmentsStore()
 const profile = profileStore()
-const auth = authStore()
 const newComment = ref('')
 
 const isEnrolled = computed(() =>
-  enrollments.enrollments.some(e => e.userId === auth.userName)
+  profile.profile !== null && enrollments.enrollments.some(e => e.userId === profile.profile!.id)
 )
+
+function displayName(userId: string): string {
+  if (profile.profile?.id === userId) return profile.profile.displayName
+  const friend = profile.friends.find(f => f.id === userId)
+  return friend ? friend.displayName : userId
+}
 
 onMounted(async () => {
   await Promise.all([
     enrollments.loadEnrollments(props.slotId),
     enrollments.loadComments(props.slotId),
+    profile.loadProfile(),
     profile.loadFriends()
   ])
 })
@@ -94,26 +100,25 @@ async function handleComment() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.btn-primary {
-  padding: 0.5rem 1.5rem;
-  background: #e94560;
-  color: white;
+h1 { font-size: 1.5rem; }
+
+.btn-primary, .btn-danger {
+  padding: 0.55rem 1.2rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  color: white;
+  min-height: 44px;
+  font-size: 1rem;
 }
 
-.btn-danger {
-  padding: 0.5rem 1.5rem;
-  background: #c00;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+.btn-primary { background: #e94560; }
+.btn-danger { background: #c00; }
 
 .section {
   margin-bottom: 2rem;
@@ -131,24 +136,21 @@ async function handleComment() {
 }
 
 .enrollment-item, .friend-item, .comment-item {
-  padding: 0.5rem;
+  padding: 0.6rem;
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.by {
-  color: #888;
-  font-size: 0.85rem;
+  word-break: break-word;
 }
 
 .friend-item button {
-  padding: 0.2rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
   background: white;
+  min-height: 40px;
 }
 
 .comment-input {
@@ -159,18 +161,20 @@ async function handleComment() {
 
 .comment-input input {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+  min-height: 44px;
 }
 
 .comment-input button {
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
   background: #e94560;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .empty { color: #888; }

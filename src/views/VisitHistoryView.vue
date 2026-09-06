@@ -1,26 +1,26 @@
 <template>
   <div class="history">
-    <h1>Visit History</h1>
+    <h1>История посещений</h1>
 
     <div class="date-range">
-      <label>From:</label>
+      <label>С:</label>
       <input type="date" v-model="from" />
-      <label>To:</label>
+      <label>По:</label>
       <input type="date" v-model="to" />
-      <button @click="loadHistory">Show</button>
+      <button @click="loadHistory">Показать</button>
     </div>
 
     <div class="tabs">
-      <button :class="{ active: tab === 'day' }" @click="tab = 'day'">By Day</button>
-      <button :class="{ active: tab === 'player' }" @click="tab = 'player'">By Player</button>
+      <button :class="{ active: tab === 'day' }" @click="tab = 'day'">По дням</button>
+      <button :class="{ active: tab === 'player' }" @click="tab = 'player'">По игрокам</button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">Загрузка...</div>
 
     <div v-else-if="tab === 'day'">
-      <div v-if="byDay.length === 0" class="empty">No data for this period.</div>
-      <table velse class="history-table">
-        <thead><tr><th>Date</th><th>Visits</th></tr></thead>
+      <div v-if="byDay.length === 0" class="empty">Нет данных за этот период.</div>
+      <table class="history-table">
+        <thead><tr><th>Дата</th><th>Посещения</th></tr></thead>
         <tbody>
           <tr v-for="v in byDay" :key="v.date">
             <td>{{ formatDate(v.date) }}</td>
@@ -31,9 +31,9 @@
     </div>
 
     <div v-else>
-      <div v-if="byPlayer.length === 0" class="empty">No data for this period.</div>
-      <table velse class="history-table">
-        <thead><tr><th>Player</th><th>Visits</th></tr></thead>
+      <div v-if="byPlayer.length === 0" class="empty">Нет данных за этот период.</div>
+      <table class="history-table">
+        <thead><tr><th>Игрок</th><th>Посещения</th></tr></thead>
         <tbody>
           <tr v-for="v in byPlayer" :key="v.userId">
             <td>{{ v.userId }}</td>
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import * as api from '@/api'
 import type { VisitByDay, VisitByPlayer } from '@/api'
 
@@ -79,29 +80,37 @@ async function loadHistory() {
 }
 
 function formatDate(dateStr: string) {
-  return format(new Date(dateStr), 'MMM d, yyyy')
+  return format(new Date(dateStr), 'd MMM yyyy', { locale: ru })
 }
 </script>
 
 <style scoped>
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 .date-range {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .date-range input {
-  padding: 0.4rem;
+  padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+  min-height: 40px;
 }
 
 .date-range button {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+  min-height: 40px;
 }
 
 .tabs {
@@ -111,11 +120,12 @@ function formatDate(dateStr: string) {
 }
 
 .tabs button {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
   background: white;
+  min-height: 40px;
 }
 
 .tabs button.active {
@@ -143,7 +153,7 @@ function formatDate(dateStr: string) {
 
 .loading, .empty {
   text-align: center;
-  padding: 3rem;
+  padding: 3rem 1rem;
   color: #888;
 }
 </style>

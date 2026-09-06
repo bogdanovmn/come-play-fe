@@ -6,13 +6,13 @@
       </div>
       <div class="nav-links">
         <template v-if="auth.isAuthenticated">
-          <router-link to="/clubs">My Clubs</router-link>
-          <router-link to="/clubs/member">Joined Clubs</router-link>
-          <router-link to="/profile">Profile</router-link>
-          <button class="btn-logout" @click="handleLogout">Logout</button>
+          <router-link to="/clubs">Мои клубы</router-link>
+          <router-link to="/clubs/member">Участвую</router-link>
+          <router-link to="/profile">Профиль</router-link>
+          <button class="btn-logout" @click="handleLogout">Выйти</button>
         </template>
         <template v-else>
-          <button class="btn-login" @click="handleLogin">Login</button>
+          <button class="btn-login" @click="handleLogin">Войти</button>
         </template>
       </div>
     </nav>
@@ -52,27 +52,31 @@ function handleLogout() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1rem;
   background: #1a1a2e;
   color: white;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .nav-brand a {
   color: white;
   text-decoration: none;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: bold;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
   color: #ccc;
   text-decoration: none;
+  font-size: 0.95rem;
 }
 
 .nav-links a:hover,
@@ -88,6 +92,8 @@ function handleLogout() {
   cursor: pointer;
   background: #e94560;
   color: white;
+  font-size: 0.95rem;
+  min-height: 36px;
 }
 
 .btn-logout {
@@ -96,7 +102,26 @@ function handleLogout() {
 
 .content {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 2rem;
+  margin: 1rem auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .navbar {
+    padding: 1rem 2rem;
+  }
+
+  .nav-brand a {
+    font-size: 1.4rem;
+  }
+
+  .nav-links {
+    gap: 1rem;
+  }
+
+  .content {
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
 }
 </style>
