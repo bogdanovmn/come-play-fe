@@ -1,5 +1,7 @@
-export function logout(ssoService: { deleteRefreshToken: () => Promise<void> }): void {
-    const { authStore } = require('@/stores/auth')
+import { SsoService } from '@bogdanovmn/ssofw'
+import { authStore } from '@/stores/auth'
+
+export function logout(ssoService: SsoService): void {
     const auth = authStore()
     ssoService.deleteRefreshToken()
         .finally(() => { auth.update() })

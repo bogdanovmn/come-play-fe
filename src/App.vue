@@ -38,7 +38,7 @@ onMounted(() => {
 })
 
 function handleLogin() {
-  ssoService.login()
+  router.push('/login')
 }
 
 function handleLogout() {

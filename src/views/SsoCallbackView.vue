@@ -1,29 +1,78 @@
 <template>
   <div class="sso-callback">
-    <p>Completing login...</p>
+    <div class="loading" v-if="isLoading">
+      <p>Completing login...</p>
+    </div>
+    <div class="error" v-else-if="hasError">
+      <h2>Login failed</h2>
+      <button @click="goHome" class="btn-primary">Back to home</button>
+    </div>
+    <div class="success" v-else-if="isSuccess">
+      <p>Success! Redirecting...</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { authStore } from '@/stores/auth'
+import { onMounted, ref, computed, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { SsoService } from '@bogdanovmn/ssofw'
+import { authStore } from '@/stores/auth'
+import { profileStore } from '@/stores/profile'
 
 const router = useRouter()
-const route = useRoute()
-const auth = authStore()
 const ssoService = inject<SsoService>('ssoService')!
+const auth = authStore()
+const profile = profileStore()
 
-onMounted(async () => {
-  const code = route.query.code as string
-  if (code) {
-    await ssoService.exchangeCodeToJwt(code)
-    auth.update()
-    router.push('/')
-  } else {
-    router.push('/')
+const isLoading = ref<boolean>(true)
+const hasError = ref<boolean>(false)
+const isSuccess = computed(() => !isLoading.value && !hasError.value)
+
+function extractUrlParams(): { code: string | null; error: string | null } {
+  const urlParams = new URLSearchParams(window.location.search)
+  return {
+    code: urlParams.get('code'),
+    error: urlParams.get('error')
   }
+}
+
+async function processCallback(): Promise<void> {
+  try {
+    const { code, error: errorParam } = extractUrlParams()
+
+    if (errorParam) {
+      console.error(decodeURIComponent(errorParam))
+      hasError.value = true
+      return
+    }
+
+    if (!code) {
+      console.error('SSO callback: code is empty')
+      hasError.value = true
+      return
+    }
+
+    await ssoService.exchangeCodeToJwt(code)
+    await profile.loadProfile()
+  } catch (err) {
+    console.error('SSO callback error:', err)
+    hasError.value = true
+  } finally {
+    auth.update()
+    isLoading.value = false
+  }
+  if (!hasError.value) {
+    goHome()
+  }
+}
+
+function goHome(): void {
+  router.push('/')
+}
+
+onMounted(() => {
+  processCallback()
 })
 </script>
 
@@ -35,5 +84,21 @@ onMounted(async () => {
   height: 50vh;
   font-size: 1.2rem;
   color: #666;
+}
+
+.error h2 {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
 }
 </style>

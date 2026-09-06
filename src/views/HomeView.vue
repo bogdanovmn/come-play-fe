@@ -12,15 +12,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { authStore } from '@/stores/auth'
-import { SsoService } from '@bogdanovmn/ssofw'
 
 const auth = authStore()
-const ssoService = inject<SsoService>('ssoService')!
+const router = useRouter()
 
 function handleLogin() {
-  ssoService.login()
+  router.push('/login')
 }
 </script>
 

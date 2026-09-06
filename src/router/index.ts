@@ -7,6 +7,15 @@ const router = createRouter({
   history: createWebHistory('/come-play/'),
   routes: [
     { path: '/', component: HomeView },
+    {
+      path: '/login',
+      redirect: () => {
+        const ssoUrl = import.meta.env.VITE_SSO_FRONT_URL
+        const redirectUri = `${window.location.origin}/come-play/sso-callback`
+        window.location.href = `${ssoUrl}/login?from=${encodeURIComponent(redirectUri)}`
+        return '/'
+      }
+    },
     { path: '/sso-callback', component: () => import('@/views/SsoCallbackView.vue') },
     { path: '/clubs', component: () => import('@/views/ClubsView.vue'), meta: { private: true } },
     { path: '/clubs/member', component: () => import('@/views/JoinedClubsView.vue'), meta: { private: true } },
