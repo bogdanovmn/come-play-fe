@@ -52,5 +52,19 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     trainings.value = trainings.value.filter(t => t.id !== trainingId)
   }
 
-  return { trainings, slots, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, create, remove }
+  async function update(
+    clubId: string,
+    trainingId: string,
+    dayOfWeek: api.DayOfWeek,
+    startTime: string,
+    endTime: string,
+    maxPlayers: number
+  ): Promise<TrainingBrief> {
+    const training = await api.updateTraining(clubId, trainingId, dayOfWeek, startTime, endTime, maxPlayers)
+    const index = trainings.value.findIndex(t => t.id === trainingId)
+    if (index !== -1) trainings.value[index] = training
+    return training
+  }
+
+  return { trainings, slots, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, create, remove, update }
 })

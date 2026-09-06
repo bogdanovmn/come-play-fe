@@ -46,6 +46,9 @@ export interface TrainingSlot {
   id: string
   trainingId: string
   slotDate: string
+  dayOfWeek: string
+  startTime: string
+  endTime: string
   enrolledCount: number
   maxPlayers: number
 }
@@ -162,6 +165,19 @@ export async function deleteTraining(clubId: string, trainingId: string): Promis
   return authApi.delete(`/clubs/${clubId}/trainings/${trainingId}`)
 }
 
+export async function updateTraining(
+  clubId: string,
+  trainingId: string,
+  dayOfWeek: DayOfWeek,
+  startTime: string,
+  endTime: string,
+  maxPlayers: number
+): Promise<TrainingBrief> {
+  return authApi.put<TrainingBrief>(`/clubs/${clubId}/trainings/${trainingId}`, {
+    dayOfWeek, startTime, endTime, maxPlayers
+  })
+}
+
 export async function listSlots(clubId: string, from: string, to: string): Promise<TrainingSlot[]> {
   return authApi.get<TrainingSlot[]>(`/clubs/${clubId}/trainings/slots`, { from, to })
 }
@@ -173,25 +189,25 @@ export async function listSlotsByTraining(clubId: string, trainingId: string): P
 // ===================== ENROLLMENT API =====================
 
 export async function enroll(slotId: string, userId?: string): Promise<void> {
-  return authApi.post(`/clubs/x/trainings/slots/${slotId}/enroll`, userId ? { userId } : {})
+  return authApi.post(`/slots/${slotId}/enroll`, userId ? { userId } : {})
 }
 
 export async function unenroll(slotId: string): Promise<void> {
-  return authApi.delete(`/clubs/x/trainings/slots/${slotId}/enroll`)
+  return authApi.delete(`/slots/${slotId}/enroll`)
 }
 
 export async function listEnrollments(slotId: string): Promise<Enrollment[]> {
-  return authApi.get<Enrollment[]>(`/clubs/x/trainings/slots/${slotId}/enrollments`)
+  return authApi.get<Enrollment[]>(`/slots/${slotId}/enrollments`)
 }
 
 // ===================== COMMENT API =====================
 
 export async function listComments(slotId: string): Promise<Comment[]> {
-  return authApi.get<Comment[]>(`/clubs/x/trainings/slots/${slotId}/comments`)
+  return authApi.get<Comment[]>(`/slots/${slotId}/comments`)
 }
 
 export async function createComment(slotId: string, text: string): Promise<Comment> {
-  return authApi.post<Comment>(`/clubs/x/trainings/slots/${slotId}/comments`, { text })
+  return authApi.post<Comment>(`/slots/${slotId}/comments`, { text })
 }
 
 // ===================== USER API =====================

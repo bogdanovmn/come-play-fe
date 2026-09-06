@@ -1,6 +1,6 @@
 <template>
   <div class="training-form">
-    <h1>Новая тренировка</h1>
+    <h1>{{ isEdit ? 'Изменить тренировку' : 'Новая тренировка' }}</h1>
     <div class="club-sport" v-if="club">
       Вид спорта: <strong>{{ club.sportTypeName }}</strong>
     </div>
@@ -22,7 +22,7 @@
 
       <div class="form-actions">
         <router-link :to="`/clubs/${clubId}/trainings`">Отмена</router-link>
-        <button class="btn-primary" @click="handleCreate" :disabled="!isValid">Создать</button>
+        <button class="btn-primary" @click="handleSubmit" :disabled="!isValid">{{ isEdit ? 'Сохранить' : 'Создать' }}</button>
       </div>
     </div>
   </div>
@@ -34,11 +34,14 @@ import { useRouter } from 'vue-router'
 import { trainingsStore } from '@/stores/trainings'
 import { clubsStore } from '@/stores/clubs'
 import { DayOfWeek } from '@/api'
+import type { TrainingBrief } from '@/api'
 
-const props = defineProps<{ clubId: string }>()
+const props = defineProps<{ clubId: string; trainingId?: string }>()
 const router = useRouter()
 const store = trainingsStore()
 const clubs = clubsStore()
+
+const isEdit = computed(() => props.trainingId !== undefined)
 
 const dayOfWeek = ref<DayOfWeek>(DayOfWeek.MONDAY)
 const startTime = ref('18:00')
@@ -62,12 +65,28 @@ const isValid = computed(() =>
   startTime.value && endTime.value && maxPlayers.value > 0
 )
 
-onMounted(() => {
+onMounted(async () => {
   clubs.loadClub(props.clubId)
+  if (isEdit.value) {
+    await store.loadTrainings(props.clubId)
+    const training: TrainingBrief | undefined = store.trainings.find(t => t.id === props.trainingId)
+    if (training) {
+      dayOfWeek.value = training.dayOfWeek as DayOfWeek
+      startTime.value = training.startTime
+      endTime.value = training.endTime
+      maxPlayers.value = training.maxPlayers
+    } else {
+      router.push(`/clubs/${props.clubId}/trainings`)
+    }
+  }
 })
 
-async function handleCreate() {
-  await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value)
+async function handleSubmit() {
+  if (isEdit.value && props.trainingId) {
+    await store.update(props.clubId, props.trainingId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value)
+  } else {
+    await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value)
+  }
   router.push(`/clubs/${props.clubId}/trainings`)
 }
 </script>
