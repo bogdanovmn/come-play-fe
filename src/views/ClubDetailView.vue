@@ -40,13 +40,13 @@ onMounted(() => {
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   margin-bottom: 0.3rem;
 }
 
 .sport-type {
   display: inline-block;
-  background: #f0f0f0;
+  background: #e9f2e9;
   border-radius: 4px;
   padding: 0.2rem 0.6rem;
   font-size: 0.9rem;
@@ -60,36 +60,41 @@ h1 {
 
 .btn-primary, .btn-secondary {
   display: inline-block;
-  padding: 0.55rem 1.2rem;
+  padding: 0.5rem 1.1rem;
   border-radius: 6px;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.95rem;
   min-height: 40px;
 }
 
 .btn-primary {
-  background: #e94560;
+  background: #2e7d32;
   color: white;
 }
 
+.btn-primary:hover {
+  background: #245c27;
+}
+
 .btn-secondary {
-  border: 1px solid #ddd;
-  color: #333;
+  border: 1px solid #d5e3d6;
+  color: #22332a;
+  background: white;
 }
 
 .closed-badge {
   display: inline-block;
   padding: 0.3rem 1rem;
-  background: #ffcccc;
-  color: #c00;
+  background: #fdeaea;
+  color: #c62828;
   border-radius: 4px;
   font-size: 0.9rem;
 }
 
 .loading {
   text-align: center;
-  padding: 3rem;
-  color: #888;
+  padding: 2.5rem;
+  color: #6f8f77;
 }
 
 @media (min-width: 600px) {

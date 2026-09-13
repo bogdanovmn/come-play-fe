@@ -1,8 +1,8 @@
 import { SsoService } from '@bogdanovmn/ssofw'
 import { authStore } from '@/stores/auth'
 
-export function logout(ssoService: SsoService): void {
+export async function logout(ssoService: SsoService): Promise<void> {
     const auth = authStore()
-    ssoService.deleteRefreshToken()
-        .finally(() => { auth.update() })
+    await ssoService.deleteRefreshToken()
+    auth.update()
 }

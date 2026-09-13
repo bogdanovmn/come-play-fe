@@ -17,12 +17,11 @@ const router = createRouter({
       }
     },
     { path: '/sso-callback', component: () => import('@/views/SsoCallbackView.vue') },
-    { path: '/clubs', component: () => import('@/views/ClubsView.vue'), meta: { private: true } },
-    { path: '/clubs/member', component: () => import('@/views/JoinedClubsView.vue'), meta: { private: true } },
+    { path: '/trainings', component: () => import('@/views/TrainingsView.vue'), meta: { private: true } },
     { path: '/clubs/:clubId', component: () => import('@/views/ClubDetailView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/edit', component: () => import('@/views/ClubEditView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/invitations', component: () => import('@/views/InvitationsView.vue'), meta: { private: true }, props: true },
-    { path: '/invitations/:invitationId', component: () => import('@/views/InvitationJoinView.vue'), meta: { private: true }, props: true },
+    { path: '/invitations/:invitationId', component: () => import('@/views/InvitationJoinView.vue'), props: true },
     { path: '/clubs/:clubId/trainings', component: () => import('@/views/TrainingScheduleView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/trainings/new', component: () => import('@/views/TrainingFormView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/trainings/:trainingId/edit', component: () => import('@/views/TrainingFormView.vue'), meta: { private: true }, props: true },
@@ -33,8 +32,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (to.meta.private && !tokenStorage.defined()) {
+  const isAuthenticated = tokenStorage.defined()
+  if (to.meta.private && !isAuthenticated) {
     return { path: '/' }
+  }
+  if (to.path === '/' && isAuthenticated) {
+    return { path: '/trainings' }
   }
 })
 

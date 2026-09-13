@@ -70,7 +70,9 @@ async function processCallback(): Promise<void> {
 }
 
 function goHome(): void {
-  router.push('/')
+  const redirect = sessionStorage.getItem('redirectAfterLogin')
+  sessionStorage.removeItem('redirectAfterLogin')
+  router.push(redirect?.startsWith('/') ? redirect : '/')
 }
 
 onMounted(() => {
@@ -85,25 +87,29 @@ onMounted(() => {
   align-items: center;
   min-height: 50vh;
   font-size: 1.2rem;
-  color: #666;
+  color: #6f8f77;
   text-align: center;
   padding: 1rem;
 }
 
 .error h2 {
-  color: #d32f2f;
+  color: #c62828;
   margin-bottom: 1rem;
 }
 
 .btn-primary {
   display: inline-block;
   padding: 0.6rem 1.5rem;
-  background: #e94560;
+  background: #2e7d32;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   min-height: 44px;
+}
+
+.btn-primary:hover {
+  background: #245c27;
 }
 </style>

@@ -2,20 +2,15 @@
   <div class="home">
     <h1>Come Play</h1>
     <p>Сервис записи на игровые тренировки: бадминтон, волейбол, теннис, футбол и т.д.</p>
-    <div v-if="!auth.isAuthenticated" class="cta">
+    <div class="cta">
       <button class="btn-primary" @click="handleLogin">Войти</button>
-    </div>
-    <div v-else class="cta">
-      <router-link to="/clubs" class="btn-primary">Мои клубы</router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { authStore } from '@/stores/auth'
 
-const auth = authStore()
 const router = useRouter()
 
 function handleLogin() {
@@ -26,48 +21,48 @@ function handleLogin() {
 <style scoped>
 .home {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 2.5rem 1rem;
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
 }
 
 p {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 2rem;
+  font-size: 1.05rem;
+  color: #6f8f77;
+  margin-bottom: 1.5rem;
 }
 
 .cta {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .btn-primary {
   display: inline-block;
-  padding: 0.8rem 2rem;
-  background: #e94560;
+  padding: 0.7rem 1.8rem;
+  background: #2e7d32;
   color: white;
   text-decoration: none;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border-radius: 6px;
+  font-size: 1.05rem;
   cursor: pointer;
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .btn-primary:hover {
-  background: #c73652;
+  background: #245c27;
 }
 
 @media (min-width: 768px) {
   .home {
-    padding: 4rem 2rem;
+    padding: 3.5rem 2rem;
   }
 
   h1 {
-    font-size: 3rem;
+    font-size: 2.4rem;
   }
 }
 </style>

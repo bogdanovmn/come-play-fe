@@ -33,19 +33,15 @@ export const profileStore = defineStore('profileStore', () => {
     }
   }
 
-  async function addFriend(userId: string): Promise<void> {
-    await api.addFriend(userId)
-    await loadFriends()
-  }
+async function addFriend(name: string): Promise<void> {
+  await api.addFriend(name)
+  await loadFriends()
+}
 
-  async function removeFriend(friendId: string): Promise<void> {
-    await api.removeFriend(friendId)
-    friends.value = friends.value.filter(f => f.id !== friendId)
-  }
+async function removeFriend(friendId: string): Promise<void> {
+  await api.removeFriend(friendId)
+  friends.value = friends.value.filter(f => f.id !== friendId)
+}
 
-  async function searchUsers(term: string): Promise<UserProfile[]> {
-    return api.searchUsers(term)
-  }
-
-  return { profile, friends, isLoading, loadProfile, updateProfile, loadFriends, addFriend, removeFriend, searchUsers }
+  return { profile, friends, isLoading, loadProfile, updateProfile, loadFriends, addFriend, removeFriend }
 })

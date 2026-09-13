@@ -26,15 +26,15 @@ export const enrollmentsStore = defineStore('enrollmentsStore', () => {
     }
   }
 
-  async function enroll(slotId: string, userId?: string): Promise<void> {
-    await api.enroll(slotId, userId)
-    await loadEnrollments(slotId)
-  }
+async function enroll(slotId: string, friendId?: string): Promise<void> {
+  await api.enroll(slotId, friendId)
+  await loadEnrollments(slotId)
+}
 
-  async function unenroll(slotId: string): Promise<void> {
-    await api.unenroll(slotId)
-    await loadEnrollments(slotId)
-  }
+async function unenroll(slotId: string, friendId?: string): Promise<void> {
+  await api.unenroll(slotId, friendId)
+  await loadEnrollments(slotId)
+}
 
   async function addComment(slotId: string, text: string): Promise<Comment> {
     const comment = await api.createComment(slotId, text)

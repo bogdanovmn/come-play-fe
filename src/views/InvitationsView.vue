@@ -72,13 +72,17 @@ h1 { font-size: 1.5rem; }
 
 .btn-primary {
   padding: 0.55rem 1.2rem;
-  background: #e94560;
+  background: #2e7d32;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   min-height: 40px;
   font-size: 1rem;
+}
+
+.btn-primary:hover {
+  background: #245c27;
 }
 
 .invitation-list {
@@ -91,8 +95,8 @@ h1 { font-size: 1.5rem; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  border: 1px solid #ddd;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d5e3d6;
   border-radius: 8px;
   gap: 0.5rem;
 }
@@ -100,13 +104,13 @@ h1 { font-size: 1.5rem; }
 .joined {
   display: block;
   margin-top: 0.2rem;
-  color: #888;
+  color: #6f8f77;
   font-size: 0.9rem;
 }
 
 .btn-copy {
   padding: 0.4rem 0.9rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   cursor: pointer;
   background: white;
@@ -114,7 +118,7 @@ h1 { font-size: 1.5rem; }
   white-space: nowrap;
 }
 
-.empty { text-align: center; padding: 3rem; color: #888; }
+.empty { text-align: center; padding: 2.5rem; color: #6f8f77; }
 
 .modal-overlay {
   position: fixed;
@@ -129,7 +133,7 @@ h1 { font-size: 1.5rem; }
 
 .modal {
   background: white;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 8px;
   width: 100%;
   max-width: 420px;
@@ -139,7 +143,7 @@ h1 { font-size: 1.5rem; }
   width: 100%;
   padding: 0.6rem;
   margin: 0.5rem 0;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
@@ -154,7 +158,7 @@ h1 { font-size: 1.5rem; }
 
 .modal-actions button {
   padding: 0.55rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;

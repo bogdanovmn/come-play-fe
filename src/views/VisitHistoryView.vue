@@ -86,7 +86,7 @@ function formatDate(dateStr: string) {
 
 <style scoped>
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   margin-bottom: 1.5rem;
 }
 
@@ -100,14 +100,14 @@ h1 {
 
 .date-range input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   min-height: 40px;
 }
 
 .date-range button {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;
@@ -121,7 +121,7 @@ h1 {
 
 .tabs button {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   cursor: pointer;
   background: white;
@@ -129,9 +129,9 @@ h1 {
 }
 
 .tabs button.active {
-  background: #e94560;
+  background: #2e7d32;
   color: white;
-  border-color: #e94560;
+  border-color: #2e7d32;
 }
 
 .history-table {
@@ -142,18 +142,18 @@ h1 {
 .history-table th,
 .history-table td {
   padding: 0.6rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e6efe7;
   text-align: left;
 }
 
 .history-table th {
   font-weight: bold;
-  background: #f5f5f5;
+  background: #e9f2e9;
 }
 
 .loading, .empty {
   text-align: center;
-  padding: 3rem 1rem;
-  color: #888;
+  padding: 2.5rem 1rem;
+  color: #6f8f77;
 }
 </style>

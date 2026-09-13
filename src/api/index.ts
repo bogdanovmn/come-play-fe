@@ -34,6 +34,13 @@ export interface Invitation {
   createdAt: string
 }
 
+export interface InvitationInfo {
+  id: string
+  clubId: string
+  clubName: string
+  name: string
+}
+
 export interface TrainingBrief {
   id: string
   dayOfWeek: string
@@ -55,7 +62,9 @@ export interface TrainingSlot {
 
 export interface Enrollment {
   slotId: string
-  userId: string
+  userId?: string
+  friendId?: string
+  name: string
   enrolledBy: string
   enrolledAt: string
 }
@@ -80,7 +89,7 @@ export interface UserProfile {
 
 export interface FriendBrief {
   id: string
-  displayName: string
+  name: string
 }
 
 export interface VisitByDay {
@@ -143,6 +152,10 @@ export async function joinByInvitation(invitationId: string): Promise<void> {
   return authApi.post(`/clubs/invitations/${invitationId}/join`)
 }
 
+export async function getInvitationInfo(invitationId: string): Promise<InvitationInfo> {
+  return makeApiRequest<InvitationInfo>('get', `/clubs/invitations/${invitationId}`)
+}
+
 // ===================== TRAINING API =====================
 
 export async function listTrainings(clubId: string): Promise<TrainingBrief[]> {
@@ -188,12 +201,12 @@ export async function listSlotsByTraining(clubId: string, trainingId: string): P
 
 // ===================== ENROLLMENT API =====================
 
-export async function enroll(slotId: string, userId?: string): Promise<void> {
-  return authApi.post(`/slots/${slotId}/enroll`, userId ? { userId } : {})
+export async function enroll(slotId: string, friendId?: string): Promise<void> {
+  return authApi.post(`/slots/${slotId}/enroll`, friendId ? { friendId } : {})
 }
 
-export async function unenroll(slotId: string): Promise<void> {
-  return authApi.delete(`/slots/${slotId}/enroll`)
+export async function unenroll(slotId: string, friendId?: string): Promise<void> {
+  return authApi.delete(`/slots/${slotId}/enroll`, friendId ? { friendId } : {})
 }
 
 export async function listEnrollments(slotId: string): Promise<Enrollment[]> {
@@ -224,16 +237,12 @@ export async function listFriends(): Promise<FriendBrief[]> {
   return authApi.get<FriendBrief[]>('/users/me/friends')
 }
 
-export async function addFriend(userId: string): Promise<void> {
-  return authApi.post('/users/me/friends', { userId })
+export async function addFriend(name: string): Promise<void> {
+  return authApi.post('/users/me/friends', { name })
 }
 
 export async function removeFriend(friendId: string): Promise<void> {
   return authApi.delete(`/users/me/friends/${friendId}`)
-}
-
-export async function searchUsers(term: string): Promise<UserProfile[]> {
-  return authApi.get<UserProfile[]>('/users/search', { term })
 }
 
 // ===================== SPORT TYPE API =====================

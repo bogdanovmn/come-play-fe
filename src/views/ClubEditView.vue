@@ -57,12 +57,16 @@ async function handleClose() {
 
 <style scoped>
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   margin-bottom: 1.5rem;
 }
 
 .form {
   max-width: 400px;
+  padding: 1rem;
+  border: 1px solid #d5e3d6;
+  border-radius: 8px;
+  background: white;
 }
 
 .form label {
@@ -74,7 +78,7 @@ h1 {
 .form input, .form select {
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   box-sizing: border-box;
   margin-bottom: 1rem;
@@ -89,14 +93,24 @@ h1 {
 
 .form-actions button {
   padding: 0.55rem 1.2rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;
   font-size: 1rem;
 }
 
+.form-actions button:first-child {
+  background: #2e7d32;
+  color: white;
+  border-color: #2e7d32;
+}
+
+.form-actions button:first-child:hover {
+  background: #245c27;
+}
+
 .btn-close {
-  color: #c00 !important;
+  color: #c62828 !important;
 }
 </style>

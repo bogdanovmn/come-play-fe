@@ -93,17 +93,21 @@ async function handleSubmit() {
 
 <style scoped>
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   margin-bottom: 0.5rem;
 }
 
 .club-sport {
   margin-bottom: 1rem;
-  color: #666;
+  color: #6f8f77;
 }
 
 .form {
   max-width: 400px;
+  padding: 1rem;
+  border: 1px solid #d5e3d6;
+  border-radius: 8px;
+  background: white;
 }
 
 .form label {
@@ -116,7 +120,7 @@ h1 {
 .form input, .form select {
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
@@ -132,20 +136,24 @@ h1 {
 .form-actions a {
   padding: 0.5rem 1rem;
   text-decoration: none;
-  border: 1px solid #ddd;
+  border: 1px solid #d5e3d6;
   border-radius: 4px;
-  color: #333;
+  color: #22332a;
   min-height: 40px;
 }
 
 .btn-primary {
   padding: 0.55rem 1.2rem;
-  background: #e94560;
+  background: #2e7d32;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;
   font-size: 1rem;
+}
+
+.btn-primary:hover {
+  background: #245c27;
 }
 </style>
