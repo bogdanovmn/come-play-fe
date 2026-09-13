@@ -16,6 +16,8 @@ export interface Club {
   sportTypeId: number
   sportTypeName: string
   ownerId: string
+  ownerName: string
+  description: string | null
   closed: boolean
   createdAt: string
 }
@@ -58,6 +60,7 @@ export interface TrainingSlot {
   endTime: string
   enrolledCount: number
   maxPlayers: number
+  commentsCount: number
 }
 
 export interface Enrollment {
@@ -73,6 +76,7 @@ export interface Comment {
   id: string
   slotId: string
   userId: string
+  authorName: string
   text: string
   createdAt: string
 }
@@ -130,8 +134,8 @@ export async function createClub(name: string, sportTypeId: number): Promise<Clu
   return authApi.post<ClubBrief>('/clubs', { name, sportTypeId })
 }
 
-export async function updateClub(clubId: string, name: string, sportTypeId: number): Promise<void> {
-  return authApi.put(`/clubs/${clubId}`, { name, sportTypeId })
+export async function updateClub(clubId: string, name: string, description: string | null, sportTypeId: number): Promise<void> {
+  return authApi.put(`/clubs/${clubId}`, { name, description, sportTypeId })
 }
 
 export async function closeClub(clubId: string): Promise<void> {
@@ -193,6 +197,10 @@ export async function updateTraining(
 
 export async function listSlots(clubId: string, from: string, to: string): Promise<TrainingSlot[]> {
   return authApi.get<TrainingSlot[]>(`/clubs/${clubId}/trainings/slots`, { from, to })
+}
+
+export async function getSlot(slotId: string): Promise<TrainingSlot> {
+  return authApi.get<TrainingSlot>(`/slots/${slotId}`)
 }
 
 export async function listSlotsByTraining(clubId: string, trainingId: string): Promise<TrainingSlot[]> {

@@ -6,7 +6,17 @@ import type { TrainingBrief, TrainingSlot } from '@/api'
 export const trainingsStore = defineStore('trainingsStore', () => {
   const trainings = ref<TrainingBrief[]>([])
   const slots = ref<TrainingSlot[]>([])
+  const slot = ref<TrainingSlot | null>(null)
   const isLoading = ref(false)
+
+  async function loadSlot(slotId: string): Promise<void> {
+    isLoading.value = true
+    try {
+      slot.value = await api.getSlot(slotId)
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   async function loadTrainings(clubId: string): Promise<void> {
     isLoading.value = true
@@ -66,5 +76,5 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     return training
   }
 
-  return { trainings, slots, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, create, remove, update }
+  return { trainings, slots, slot, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, loadSlot, create, remove, update }
 })

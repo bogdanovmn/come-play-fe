@@ -7,7 +7,8 @@
       <div class="nav-links">
         <template v-if="auth.isAuthenticated">
           <router-link to="/trainings">Тренировки</router-link>
-          <router-link to="/profile">Профиль</router-link>
+          <router-link v-if="auth.userName" to="/profile" class="user-name full" :title="auth.userName">{{ auth.userName }}</router-link>
+          <router-link v-if="auth.userName" to="/profile" class="user-name short" :title="auth.userName">{{ initials(auth.userName) }}</router-link>
           <button class="icon-btn" title="Выйти" aria-label="Выйти" @click="handleLogout">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -44,6 +45,17 @@ const router = useRouter()
 const auth = authStore()
 const ssoService = inject<SsoService>('ssoService')!
 
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase()
+  }
+  return parts
+    .slice(0, 2)
+    .map(part => part.charAt(0).toUpperCase())
+    .join('')
+}
+
 onMounted(() => {
   auth.update()
 })
@@ -64,14 +76,14 @@ async function handleLogout() {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: #1b5e20;
-  color: white;
+  background: var(--color-nav);
+  color: var(--color-on-primary);
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .nav-brand a {
-  color: white;
+  color: var(--color-on-primary);
   text-decoration: none;
   font-size: 1.25rem;
   font-weight: bold;
@@ -85,7 +97,7 @@ async function handleLogout() {
 }
 
 .nav-links a {
-  color: #cfe0cf;
+  color: var(--color-nav-link);
   text-decoration: none;
   font-size: 0.95rem;
   padding: 0.4rem 0.25rem;
@@ -93,7 +105,24 @@ async function handleLogout() {
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
-  color: white;
+  color: var(--color-on-primary);
+}
+
+.user-name {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  color: var(--color-nav-link);
+}
+
+.user-name:hover {
+  color: var(--color-on-primary);
+}
+
+.user-name.short {
+  display: none;
 }
 
 .icon-btn {
@@ -106,12 +135,12 @@ async function handleLogout() {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .icon-btn:hover {
-  background: #245c27;
+  background: var(--color-nav-hover);
 }
 
 .icon-btn svg {
@@ -123,6 +152,16 @@ async function handleLogout() {
   max-width: 1200px;
   margin: 1rem auto;
   padding: 0 1rem;
+}
+
+@media (max-width: 599px) {
+  .user-name.full {
+    display: none;
+  }
+
+  .user-name.short {
+    display: inline;
+  }
 }
 
 @media (min-width: 768px) {

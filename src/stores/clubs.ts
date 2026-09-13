@@ -48,12 +48,13 @@ export const clubsStore = defineStore('clubsStore', () => {
     }
   }
 
-  async function update(clubId: string, name: string, sportTypeId: number): Promise<void> {
-    await api.updateClub(clubId, name, sportTypeId)
+  async function update(clubId: string, name: string, description: string | null, sportTypeId: number): Promise<void> {
+    await api.updateClub(clubId, name, description, sportTypeId)
     if (currentClub.value?.id === clubId) {
       currentClub.value = {
         ...currentClub.value,
         name,
+        description,
         sportTypeId
       }
     }

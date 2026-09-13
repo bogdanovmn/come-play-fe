@@ -1,14 +1,11 @@
 <template>
   <div class="history">
-    <h1>История посещений</h1>
-
-    <div class="date-range">
-      <label>С:</label>
-      <input type="date" v-model="from" />
-      <label>По:</label>
-      <input type="date" v-model="to" />
-      <button @click="loadHistory">Показать</button>
+    <div class="heading-row">
+      <BackButton :fallback="`/clubs/${clubId}`" />
+      <h1>История посещений</h1>
     </div>
+
+    <p class="subtitle">За последние 3 месяца</p>
 
     <div class="tabs">
       <button :class="{ active: tab === 'day' }" @click="tab = 'day'">По дням</button>
@@ -51,11 +48,12 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import * as api from '@/api'
 import type { VisitByDay, VisitByPlayer } from '@/api'
+import BackButton from '@/components/BackButton.vue'
 
 const props = defineProps<{ clubId: string }>()
 
-const from = ref(format(new Date(Date.now() - 90 * 86400000), 'yyyy-MM-dd'))
-const to = ref(format(new Date(), 'yyyy-MM-dd'))
+const to = format(new Date(), 'yyyy-MM-dd')
+const from = format(new Date(Date.now() - 90 * 86400000), 'yyyy-MM-dd')
 const tab = ref<'day' | 'player'>('day')
 const byDay = ref<VisitByDay[]>([])
 const byPlayer = ref<VisitByPlayer[]>([])
@@ -69,8 +67,8 @@ async function loadHistory() {
   loading.value = true
   try {
     const [dayData, playerData] = await Promise.all([
-      api.visitByDay(props.clubId, from.value, to.value),
-      api.visitByPlayer(props.clubId, from.value, to.value)
+      api.visitByDay(props.clubId, from, to),
+      api.visitByPlayer(props.clubId, from, to)
     ])
     byDay.value = dayData
     byPlayer.value = playerData
@@ -87,30 +85,19 @@ function formatDate(dateStr: string) {
 <style scoped>
 h1 {
   font-size: 1.35rem;
-  margin-bottom: 1.5rem;
 }
 
-.date-range {
+.heading-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.date-range input {
-  padding: 0.5rem;
-  border: 1px solid #d5e3d6;
-  border-radius: 4px;
-  min-height: 40px;
-}
-
-.date-range button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d5e3d6;
-  border-radius: 4px;
-  cursor: pointer;
-  min-height: 40px;
+.subtitle {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
 }
 
 .tabs {
@@ -121,17 +108,17 @@ h1 {
 
 .tabs button {
   padding: 0.5rem 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
-  background: white;
+  background: var(--color-surface);
   min-height: 40px;
 }
 
 .tabs button.active {
-  background: #2e7d32;
-  color: white;
-  border-color: #2e7d32;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
 }
 
 .history-table {
@@ -142,18 +129,18 @@ h1 {
 .history-table th,
 .history-table td {
   padding: 0.6rem;
-  border-bottom: 1px solid #e6efe7;
+  border-bottom: 1px solid var(--color-row-border);
   text-align: left;
 }
 
 .history-table th {
   font-weight: bold;
-  background: #e9f2e9;
+  background: var(--color-primary-soft);
 }
 
 .loading, .empty {
   text-align: center;
   padding: 2.5rem 1rem;
-  color: #6f8f77;
+  color: var(--color-muted);
 }
 </style>

@@ -87,21 +87,21 @@ onMounted(() => {
   align-items: center;
   min-height: 50vh;
   font-size: 1.2rem;
-  color: #6f8f77;
+  color: var(--color-muted);
   text-align: center;
   padding: 1rem;
 }
 
 .error h2 {
-  color: #c62828;
+  color: var(--color-danger);
   margin-bottom: 1rem;
 }
 
 .btn-primary {
   display: inline-block;
   padding: 0.6rem 1.5rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 6px;
   font-size: 1rem;
@@ -110,6 +110,6 @@ onMounted(() => {
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
   <div class="invitation-join">
+    <BackButton fallback="/" />
     <div v-if="loading" class="loading">Загрузка...</div>
 
     <div v-else-if="error" class="error">
@@ -25,6 +26,7 @@ import { useRouter } from 'vue-router'
 import * as api from '@/api'
 import type { InvitationInfo } from '@/api'
 import { authStore } from '@/stores/auth'
+import BackButton from '@/components/BackButton.vue'
 
 const props = defineProps<{ invitationId: string }>()
 const router = useRouter()
@@ -76,12 +78,12 @@ function handleLogin() {
 .club-name {
   font-size: 1.6rem;
   font-weight: bold;
-  color: #2e7d32;
+  color: var(--color-primary);
   margin-bottom: 1rem;
 }
 
 .text {
-  color: #44584c;
+  color: var(--color-muted);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -93,8 +95,8 @@ function handleLogin() {
 .btn-primary {
   display: inline-block;
   padding: 0.7rem 1.8rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   text-decoration: none;
   border: none;
   border-radius: 6px;
@@ -104,18 +106,18 @@ function handleLogin() {
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
-.loading { color: #6f8f77; }
-.error { color: #c62828; }
+.loading { color: var(--color-muted); }
+.error { color: var(--color-danger); }
 
 .error p {
   margin: 0.75rem 0 1.5rem;
 }
 
 .error a {
-  color: white;
+  color: var(--color-on-primary);
   display: inline-block;
   margin-top: 0.5rem;
 }

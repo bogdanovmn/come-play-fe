@@ -1,6 +1,9 @@
 <template>
   <div class="profile">
-    <h1>Профиль</h1>
+    <div class="heading-row">
+      <BackButton fallback="/trainings" />
+      <h1>Профиль</h1>
+    </div>
 
     <div class="tab-bar">
       <button :class="{ active: activeTab === 'about' }" @click="activeTab = 'about'">Обо мне</button>
@@ -79,6 +82,7 @@ import { useRouter } from 'vue-router'
 import { profileStore } from '@/stores/profile'
 import { clubsStore } from '@/stores/clubs'
 import { sportTypesStore } from '@/stores/sportTypes'
+import BackButton from '@/components/BackButton.vue'
 
 const router = useRouter()
 const profile = profileStore()
@@ -135,6 +139,12 @@ async function handleCreateClub() {
 <style scoped>
 h1 {
   font-size: 1.35rem;
+}
+
+.heading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
@@ -142,7 +152,7 @@ h1 {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid #d5e3d6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .tab-bar button {
@@ -151,14 +161,14 @@ h1 {
   border-bottom: 2px solid transparent;
   cursor: pointer;
   background: none;
-  color: #4a5f51;
+  color: var(--color-muted);
   font-size: 1rem;
   min-height: 44px;
 }
 
 .tab-bar button.active {
-  color: #2e7d32;
-  border-bottom-color: #2e7d32;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -172,7 +182,7 @@ h1 {
 }
 
 .hint {
-  color: #6f8f77;
+  color: var(--color-muted);
   font-size: 0.9rem;
   margin-bottom: 0.75rem;
 }
@@ -185,7 +195,7 @@ h1 {
 
 .edit-name input {
   padding: 0.6rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   flex: 1;
   min-width: 200px;
@@ -194,8 +204,8 @@ h1 {
 
 .edit-name button {
   padding: 0.55rem 1.2rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -204,7 +214,7 @@ h1 {
 }
 
 .edit-name button:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
 .add-friend {
@@ -215,7 +225,7 @@ h1 {
 
 .add-friend input {
   padding: 0.6rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   flex: 1;
   min-width: 200px;
@@ -224,8 +234,8 @@ h1 {
 
 .add-friend button {
   padding: 0.55rem 1.2rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -233,7 +243,7 @@ h1 {
 }
 
 .add-friend button:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
 .friend-list {
@@ -246,17 +256,17 @@ h1 {
   display: flex;
   justify-content: space-between;
   padding: 0.6rem;
-  border-bottom: 1px solid #e6efe7;
+  border-bottom: 1px solid var(--color-row-border);
   align-items: center;
 }
 
 .btn-remove {
   padding: 0.4rem 0.8rem;
-  border: 1px solid #c62828;
-  color: #c62828;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 4px;
   cursor: pointer;
-  background: white;
+  background: var(--color-surface);
   min-height: 36px;
 }
 
@@ -274,8 +284,8 @@ h1 {
 
 .btn-primary {
   padding: 0.5rem 1.1rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -284,7 +294,7 @@ h1 {
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
 .club-list {
@@ -295,15 +305,15 @@ h1 {
 
 .club-card {
   padding: 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .club-card:hover {
-  border-color: #2e7d32;
-  box-shadow: 0 1px 4px rgba(46, 125, 50, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 1px 4px rgba(93, 74, 53, 0.15);
 }
 
 .club-card h3 {
@@ -313,7 +323,7 @@ h1 {
 
 .sport-type {
   display: inline-block;
-  background: #e9f2e9;
+  background: var(--color-primary-soft);
   border-radius: 4px;
   padding: 0.15rem 0.5rem;
   font-size: 0.85rem;
@@ -322,22 +332,22 @@ h1 {
 
 .members {
   display: block;
-  color: #6f8f77;
+  color: var(--color-muted);
   font-size: 0.9rem;
 }
 
-.empty { color: #6f8f77; }
+.empty { color: var(--color-muted); }
 
 .loading {
   text-align: center;
   padding: 2rem 1rem;
-  color: #6f8f77;
+  color: var(--color-muted);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -346,7 +356,7 @@ h1 {
 }
 
 .modal {
-  background: white;
+  background: var(--color-surface);
   padding: 1.25rem;
   border-radius: 8px;
   width: 100%;
@@ -361,7 +371,7 @@ h1 {
   width: 100%;
   padding: 0.6rem;
   margin: 0.5rem 0;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
@@ -382,7 +392,7 @@ h1 {
 
 .modal-actions button {
   padding: 0.55rem 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;

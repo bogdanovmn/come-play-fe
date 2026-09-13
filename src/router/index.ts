@@ -19,6 +19,7 @@ const router = createRouter({
     { path: '/sso-callback', component: () => import('@/views/SsoCallbackView.vue') },
     { path: '/trainings', component: () => import('@/views/TrainingsView.vue'), meta: { private: true } },
     { path: '/clubs/:clubId', component: () => import('@/views/ClubDetailView.vue'), meta: { private: true }, props: true },
+    { path: '/clubs/:clubId/info', component: () => import('@/views/ClubInfoView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/edit', component: () => import('@/views/ClubEditView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/invitations', component: () => import('@/views/InvitationsView.vue'), meta: { private: true }, props: true },
     { path: '/invitations/:invitationId', component: () => import('@/views/InvitationJoinView.vue'), props: true },

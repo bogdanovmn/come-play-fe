@@ -31,7 +31,7 @@ h1 {
 
 p {
   font-size: 1.05rem;
-  color: #6f8f77;
+  color: var(--color-muted);
   margin-bottom: 1.5rem;
 }
 
@@ -42,8 +42,8 @@ p {
 .btn-primary {
   display: inline-block;
   padding: 0.7rem 1.8rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   text-decoration: none;
   border: none;
   border-radius: 6px;
@@ -53,7 +53,7 @@ p {
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
 @media (min-width: 768px) {

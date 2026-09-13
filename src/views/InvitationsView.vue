@@ -1,6 +1,7 @@
 <template>
   <div class="invitations">
     <div class="header">
+      <BackButton :fallback="`/clubs/${clubId}`" />
       <h1>Приглашения</h1>
       <button class="btn-primary" @click="showCreate = true">Новое приглашение</button>
     </div>
@@ -34,6 +35,7 @@
 import { ref, onMounted } from 'vue'
 import * as api from '@/api'
 import type { InvitationBrief } from '@/api'
+import BackButton from '@/components/BackButton.vue'
 
 const props = defineProps<{ clubId: string }>()
 const invitationList = ref<InvitationBrief[]>([])
@@ -72,8 +74,8 @@ h1 { font-size: 1.5rem; }
 
 .btn-primary {
   padding: 0.55rem 1.2rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -82,7 +84,7 @@ h1 { font-size: 1.5rem; }
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 
 .invitation-list {
@@ -96,7 +98,7 @@ h1 { font-size: 1.5rem; }
   justify-content: space-between;
   align-items: center;
   padding: 0.9rem 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   gap: 0.5rem;
 }
@@ -104,26 +106,26 @@ h1 { font-size: 1.5rem; }
 .joined {
   display: block;
   margin-top: 0.2rem;
-  color: #6f8f77;
+  color: var(--color-muted);
   font-size: 0.9rem;
 }
 
 .btn-copy {
   padding: 0.4rem 0.9rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
-  background: white;
+  background: var(--color-surface);
   min-height: 40px;
   white-space: nowrap;
 }
 
-.empty { text-align: center; padding: 2.5rem; color: #6f8f77; }
+.empty { text-align: center; padding: 2.5rem; color: var(--color-muted); }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -132,7 +134,7 @@ h1 { font-size: 1.5rem; }
 }
 
 .modal {
-  background: white;
+  background: var(--color-surface);
   padding: 1.25rem;
   border-radius: 8px;
   width: 100%;
@@ -143,7 +145,7 @@ h1 { font-size: 1.5rem; }
   width: 100%;
   padding: 0.6rem;
   margin: 0.5rem 0;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
@@ -158,7 +160,7 @@ h1 { font-size: 1.5rem; }
 
 .modal-actions button {
   padding: 0.55rem 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;

@@ -1,6 +1,9 @@
 <template>
   <div class="training-form">
-    <h1>{{ isEdit ? 'Изменить тренировку' : 'Новая тренировка' }}</h1>
+    <div class="heading-row">
+      <BackButton fallback="/trainings" />
+      <h1>{{ isEdit ? 'Изменить тренировку' : 'Новая тренировка' }}</h1>
+    </div>
     <div class="club-sport" v-if="club">
       Вид спорта: <strong>{{ club.sportTypeName }}</strong>
     </div>
@@ -35,6 +38,7 @@ import { trainingsStore } from '@/stores/trainings'
 import { clubsStore } from '@/stores/clubs'
 import { DayOfWeek } from '@/api'
 import type { TrainingBrief } from '@/api'
+import BackButton from '@/components/BackButton.vue'
 
 const props = defineProps<{ clubId: string; trainingId?: string }>()
 const router = useRouter()
@@ -94,20 +98,26 @@ async function handleSubmit() {
 <style scoped>
 h1 {
   font-size: 1.35rem;
+}
+
+.heading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .club-sport {
   margin-bottom: 1rem;
-  color: #6f8f77;
+  color: var(--color-muted);
 }
 
 .form {
   max-width: 400px;
   padding: 1rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-surface);
 }
 
 .form label {
@@ -120,7 +130,7 @@ h1 {
 .form input, .form select {
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
@@ -136,16 +146,16 @@ h1 {
 .form-actions a {
   padding: 0.5rem 1rem;
   text-decoration: none;
-  border: 1px solid #d5e3d6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: #22332a;
+  color: var(--color-text);
   min-height: 40px;
 }
 
 .btn-primary {
   padding: 0.55rem 1.2rem;
-  background: #2e7d32;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -154,6 +164,6 @@ h1 {
 }
 
 .btn-primary:hover {
-  background: #245c27;
+  background: var(--color-primary-hover);
 }
 </style>
