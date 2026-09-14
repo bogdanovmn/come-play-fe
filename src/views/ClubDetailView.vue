@@ -26,7 +26,6 @@
     <div v-if="isOwner" class="schedule-manage">
       <div class="schedule-header">
         <h2>Расписание периодических тренировок</h2>
-        <router-link :to="`/clubs/${clubId}/trainings/new`" class="btn-primary">Добавить</router-link>
       </div>
 
       <div v-if="trainings.isLoading" class="loading">Загрузка...</div>
@@ -37,7 +36,7 @@
         <div v-for="t in trainings.trainings" :key="t.id" class="training-row">
           <span class="training-info">
             <strong>{{ dayLabel(t.dayOfWeek) }}</strong>
-            {{ formatTime(t.startTime) }} – {{ formatTime(t.endTime) }} ({{ t.maxPlayers }} чел.)
+            {{ formatTime(t.startTime) }} – {{ formatTime(t.endTime) }} ({{ t.maxPlayers }} {{ pluralRu(t.maxPlayers, 'человек', 'человека', 'человек') }})
           </span>
           <span class="training-actions">
             <router-link :to="`/clubs/${clubId}/trainings/${t.id}/edit`">Изменить</router-link>
@@ -45,6 +44,7 @@
           </span>
         </div>
       </div>
+      <router-link :to="`/clubs/${clubId}/trainings/new`" class="btn-primary add-btn">Добавить</router-link>
     </div>
   </div>
   <div v-else class="loading">Загрузка...</div>
@@ -57,6 +57,7 @@ import { trainingsStore } from '@/stores/trainings'
 import { profileStore } from '@/stores/profile'
 import { DayOfWeek } from '@/api'
 import BackButton from '@/components/BackButton.vue'
+import { pluralRu } from '@/utils/plural'
 
 const props = defineProps<{ clubId: string }>()
 const clubs = clubsStore()
@@ -107,7 +108,7 @@ async function handleDelete(trainingId: string) {
   align-items: center;
   margin-bottom: 1rem;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 h1 {
@@ -180,7 +181,6 @@ h1 {
 
 .schedule-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -236,6 +236,11 @@ h1 {
   text-align: center;
   padding: 2rem 1rem;
   color: var(--color-muted);
+}
+
+.add-btn {
+  display: inline-block;
+  margin-top: 1rem;
 }
 
 .empty {

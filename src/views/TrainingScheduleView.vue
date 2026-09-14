@@ -1,20 +1,18 @@
 <template>
   <div class="schedule">
-    <div class="header">
+    <div class="heading-row">
       <BackButton fallback="/trainings" />
-      <div class="title-wrap">
-        <h1>Запись на тренировки</h1>
-        <div v-if="club" class="subtitle">
-          <span>в клубе {{ club.name }}</span>
-          <router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="16" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
-          </router-link>
-        </div>
-      </div>
+      <h1>Запись на тренировки</h1>
+    </div>
+    <div v-if="club" class="heading-sub">
+      <span>в клуб {{ club.name }}</span>
+      <router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </router-link>
     </div>
 
     <div v-if="store.isLoading" class="loading">Загрузка...</div>
@@ -30,12 +28,12 @@
           </div>
           <div class="slot-info">
             <span class="enrolled">{{ slot.enrolledCount }}/{{ slot.maxPlayers }}</span>
-            <span v-if="slot.commentsCount > 0" class="comments">{{ slot.commentsCount }} комм.</span>
+            <span v-if="slot.commentsCount > 0" class="comments">{{ slot.commentsCount }} {{ pluralRu(slot.commentsCount, 'комментарий', 'комментария', 'комментариев') }}</span>
           </div>
         </div>
       </div>
       <div v-if="store.slots.length > 3" class="more-hint">
-        и ещё {{ store.slots.length - 3 }} трениров{{ pluralSuffix(store.slots.length - 3) }} в ближайшее время
+        и ещё {{ store.slots.length - 3 }} {{ pluralRu(store.slots.length - 3, 'тренировка', 'тренировки', 'тренировок') }} в ближайшее время
       </div>
     </div>
   </div>
@@ -49,6 +47,7 @@ import { ru } from 'date-fns/locale'
 import { trainingsStore } from '@/stores/trainings'
 import { clubsStore } from '@/stores/clubs'
 import BackButton from '@/components/BackButton.vue'
+import { pluralRu } from '@/utils/plural'
 
 const props = defineProps<{ clubId: string }>()
 const router = useRouter()
@@ -69,14 +68,6 @@ function formatDate(dateStr: string) {
   return format(new Date(dateStr), 'EEEE, d MMMM', { locale: ru })
 }
 
-function pluralSuffix(count: number): string {
-  const mod10 = count % 10
-  const mod100 = count % 100
-  if (mod10 === 1 && mod100 !== 11) return 'у'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'ы'
-  return ''
-}
-
 onMounted(() => {
   clubs.loadClub(props.clubId)
   store.loadSlots(props.clubId, from.value, to.value)
@@ -84,28 +75,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.header {
+.heading-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
   flex-wrap: wrap;
 }
 
 h1 { font-size: 1.35rem; margin: 0; }
 
-.title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.subtitle {
+.heading-sub {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--color-muted);
+  margin-bottom: 1rem;
 }
 
 .info-icon {

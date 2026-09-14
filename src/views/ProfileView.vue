@@ -53,7 +53,7 @@
           <div v-for="club in clubs.ownedClubs" :key="club.id" class="club-card" @click="router.push(`/clubs/${club.id}`)">
             <h3>{{ club.name }}</h3>
             <span class="sport-type">{{ club.sportTypeName }}</span>
-            <span class="members">{{ club.membersCount }} участн.</span>
+            <span class="members">{{ club.membersCount }} {{ pluralRu(club.membersCount, 'участник', 'участника', 'участников') }}</span>
           </div>
         </div>
       </div>
@@ -83,6 +83,7 @@ import { profileStore } from '@/stores/profile'
 import { clubsStore } from '@/stores/clubs'
 import { sportTypesStore } from '@/stores/sportTypes'
 import BackButton from '@/components/BackButton.vue'
+import { pluralRu } from '@/utils/plural'
 
 const router = useRouter()
 const profile = profileStore()
@@ -144,7 +145,7 @@ h1 {
 .heading-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 

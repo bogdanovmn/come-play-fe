@@ -20,7 +20,7 @@
       <label>Конец</label>
       <input type="time" v-model="endTime" />
 
-      <label>Макс. игроков</label>
+      <label>Максимум игроков</label>
       <input type="number" v-model.number="maxPlayers" min="1" max="100" />
 
       <div class="form-actions">
@@ -103,7 +103,7 @@ h1 {
 .heading-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 

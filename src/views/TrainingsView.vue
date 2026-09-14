@@ -11,9 +11,11 @@
 
     <div v-else class="club-list">
       <div v-for="club in clubs.memberClubs" :key="club.id" class="club-card" @click="router.push(`/clubs/${club.id}/trainings`)">
-        <h3>{{ club.name }}</h3>
-        <span class="sport-type">{{ club.sportTypeName }}</span>
-        <span class="members">{{ club.membersCount }} участн.</span>
+        <h3 class="club-title">
+          {{ club.name }}
+          <span class="sport-type">{{ club.sportTypeName }}</span>
+        </h3>
+        <span class="members">{{ club.membersCount }} {{ pluralRu(club.membersCount, 'участник', 'участника', 'участников') }}</span>
       </div>
     </div>
   </div>
@@ -23,6 +25,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { clubsStore } from '@/stores/clubs'
+import { pluralRu } from '@/utils/plural'
 
 const router = useRouter()
 const clubs = clubsStore()
@@ -61,15 +64,23 @@ h1 {
   box-shadow: 0 1px 4px rgba(93, 74, 53, 0.15);
 }
 
-.club-card h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.club-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
 
 .sport-type {
-  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 400;
   background: var(--color-primary-soft);
   border-radius: 4px;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.85rem;
-  margin-bottom: 0.3rem;
+  padding: 0.1rem 0.5rem;
+  vertical-align: super;
+  white-space: nowrap;
 }
 
 .members { display: block; color: var(--color-muted); font-size: 0.9rem; }

@@ -43,6 +43,12 @@ export interface InvitationInfo {
   name: string
 }
 
+export interface InvitationJoiner {
+  userId: string
+  name: string
+  registeredAt: string
+}
+
 export interface TrainingBrief {
   id: string
   dayOfWeek: string
@@ -158,6 +164,10 @@ export async function joinByInvitation(invitationId: string): Promise<void> {
 
 export async function getInvitationInfo(invitationId: string): Promise<InvitationInfo> {
   return makeApiRequest<InvitationInfo>('get', `/clubs/invitations/${invitationId}`)
+}
+
+export async function listInvitationJoiners(clubId: string, invitationId: string): Promise<InvitationJoiner[]> {
+  return authApi.get<InvitationJoiner[]>(`/clubs/${clubId}/invitations/${invitationId}/joiners`)
 }
 
 // ===================== TRAINING API =====================

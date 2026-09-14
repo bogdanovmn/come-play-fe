@@ -3,63 +3,76 @@
     <div class="loading">Загрузка...</div>
   </div>
   <div class="training-detail" v-else>
-    <div class="header">
+    <div class="heading-row">
       <BackButton fallback="/trainings" />
-      <div>
-        <h1>Тренировка</h1>
-        <div v-if="trainings.slot" class="slot-meta">
-          <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
-          <span class="slot-time">{{ dayLabel(trainings.slot.dayOfWeek) }}, {{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
-        </div>
-      </div>
+      <h1>Тренировка</h1>
       <div class="actions">
         <button v-if="!isEnrolled" class="btn-primary" @click="handleEnroll">Записаться</button>
       </div>
     </div>
 
-    <div class="section">
-      <h2>Записаны ({{ enrollments.enrollments.length }})</h2>
-      <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
-      <div v-else class="enrollment-list">
-        <div v-for="e in enrollments.enrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
-          <span>{{ e.name }}</span>
-          <button v-if="canCancel(e)" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
+    <div v-if="trainings.slot" class="slot-meta">
+      <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
+      <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
+    </div>
+
+    <div class="tab-bar">
+      <button :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись</button>
+      <button :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии ({{ enrollments.comments.length }})</button>
+    </div>
+
+    <div v-if="tab === 'signup'" class="tab-content">
+      <div class="section">
+        <h2>Записаны ({{ enrollments.enrollments.length }})</h2>
+        <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
+        <div v-else class="enrollment-list">
+          <div v-for="e in enrollments.enrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+            <span>{{ e.name }}</span>
+            <button v-if="canCancel(e)" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="profile.friends.length > 0" class="section">
+        <h2>Друзья</h2>
+        <div class="friend-list">
+          <div v-for="f in profile.friends" :key="f.id" class="friend-item">
+            <span>{{ f.name }}</span>
+            <button @click="handleToggleFriend(f.id)">
+              {{ isFriendEnrolled(f.id) ? 'Снять запись' : 'Записать' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="tab-content">
+      <div class="section">
+        <h2>Комментарии</h2>
+        <div class="comment-list">
+          <div v-for="c in enrollments.comments" :key="c.id" class="comment-item">
+            <div class="comment-head">
+              <span class="comment-date">{{ formatCommentDate(c.createdAt) }}</span>
+              <strong>{{ c.authorName }}:</strong>
+            </div>
+            <div class="comment-text">{{ c.text }}</div>
+          </div>
+          <div v-if="enrollments.comments.length === 0" class="empty">Пока нет комментариев.</div>
+        </div>
+        <div class="comment-input">
+          <input v-model="newComment" placeholder="Написать комментарий..." @keyup.enter="handleComment" />
+          <button class="btn-send" title="Отправить" aria-label="Отправить" @click="handleComment" :disabled="!newComment.trim()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>
         </div>
-      </div>
-    </div>
-
-    <div v-if="profile.friends.length > 0" class="section">
-      <h2>Друзья</h2>
-      <div class="friend-list">
-        <div v-for="f in profile.friends" :key="f.id" class="friend-item">
-          <span>{{ f.name }}</span>
-          <button @click="handleToggleFriend(f.id)">
-            {{ isFriendEnrolled(f.id) ? 'Снять запись' : 'Записать' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Комментарии</h2>
-      <div class="comment-list">
-        <div v-for="c in enrollments.comments" :key="c.id" class="comment-item">
-          <div class="comment-head">
-            <span class="comment-date">{{ formatCommentDate(c.createdAt) }}</span>
-            <strong>{{ c.authorName }}:</strong>
-          </div>
-          <div class="comment-text">{{ c.text }}</div>
-        </div>
-        <div v-if="enrollments.comments.length === 0" class="empty">Пока нет комментариев.</div>
-      </div>
-      <div class="comment-input">
-        <input v-model="newComment" placeholder="Написать комментарий..." @keyup.enter="handleComment" />
-        <button @click="handleComment" :disabled="!newComment.trim()">Отправить</button>
       </div>
     </div>
   </div>
@@ -72,7 +85,6 @@ import { ru } from 'date-fns/locale'
 import { enrollmentsStore } from '@/stores/enrollments'
 import { profileStore } from '@/stores/profile'
 import { trainingsStore } from '@/stores/trainings'
-import { DayOfWeek } from '@/api'
 import type { Enrollment } from '@/api'
 import BackButton from '@/components/BackButton.vue'
 
@@ -81,20 +93,7 @@ const enrollments = enrollmentsStore()
 const profile = profileStore()
 const trainings = trainingsStore()
 const newComment = ref('')
-
-const dayLabels: Record<string, string> = {
-  [DayOfWeek.MONDAY]: 'Понедельник',
-  [DayOfWeek.TUESDAY]: 'Вторник',
-  [DayOfWeek.WEDNESDAY]: 'Среда',
-  [DayOfWeek.THURSDAY]: 'Четверг',
-  [DayOfWeek.FRIDAY]: 'Пятница',
-  [DayOfWeek.SATURDAY]: 'Суббота',
-  [DayOfWeek.SUNDAY]: 'Воскресенье',
-}
-
-function dayLabel(day: string): string {
-  return dayLabels[day] ?? day
-}
+const tab = ref<'signup' | 'comments'>('signup')
 
 function formatTime(value: string): string {
   return value.length > 5 ? value.slice(0, 5) : value
@@ -165,28 +164,32 @@ async function handleComment() {
 </script>
 
 <style scoped>
-.header {
+.heading-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
   gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
 }
 
-h1 { font-size: 1.35rem; }
+h1 {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.actions {
+  margin-left: auto;
+}
 
 .slot-meta {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin-top: 0.3rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
 }
 
-.slot-date {
-  font-weight: 600;
-}
-
+.slot-date,
 .slot-time {
   color: var(--color-muted);
 }
@@ -203,6 +206,30 @@ h1 { font-size: 1.35rem; }
 
 .btn-primary { background: var(--color-primary); }
 .btn-primary:hover { background: var(--color-primary-hover); }
+
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-bar button {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: none;
+  color: var(--color-muted);
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.tab-bar button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
 
 .section {
   margin-bottom: 1.5rem;
@@ -302,18 +329,33 @@ h1 { font-size: 1.35rem; }
   min-height: 44px;
 }
 
-.comment-input button {
-  padding: 0.55rem 1rem;
+.btn-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  min-height: 44px;
 }
 
-.comment-input button:hover {
+.btn-send:hover:not(:disabled) {
   background: var(--color-primary-hover);
+}
+
+.btn-send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-send svg {
+  width: 18px;
+  height: 18px;
 }
 
 .empty { color: var(--color-muted); }
