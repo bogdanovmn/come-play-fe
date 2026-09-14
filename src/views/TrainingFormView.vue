@@ -15,13 +15,36 @@
       </select>
 
       <label>Начало</label>
-      <input type="time" v-model="startTime" />
+      <div class="time-input">
+        <button type="button" class="time-value" :class="{ open: openTimeField === 'start' }" :aria-expanded="openTimeField === 'start'" @click="toggleTimeField('start')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>{{ startTime }}</span>
+        </button>
+        <TimeWheel v-if="openTimeField === 'start'" v-model="startTime" @select="openTimeField = null" />
+      </div>
 
       <label>Конец</label>
-      <input type="time" v-model="endTime" />
+      <div class="time-input">
+        <button type="button" class="time-value" :class="{ open: openTimeField === 'end' }" :aria-expanded="openTimeField === 'end'" @click="toggleTimeField('end')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>{{ endTime }}</span>
+        </button>
+        <TimeWheel v-if="openTimeField === 'end'" v-model="endTime" @select="openTimeField = null" />
+      </div>
 
       <label>Максимум игроков</label>
-      <input type="number" v-model.number="maxPlayers" min="1" max="100" />
+      <div class="max-players">
+        <button type="button" class="max-players-value" @click="wheelOpen = !wheelOpen" :aria-expanded="wheelOpen">
+          {{ maxPlayers }}
+        </button>
+        <NumberWheel v-if="wheelOpen" v-model="maxPlayers" :min="2" :max="50" @select="wheelOpen = false" />
+      </div>
 
       <div class="form-actions">
         <router-link :to="`/clubs/${clubId}/trainings`">Отмена</router-link>
@@ -39,6 +62,8 @@ import { clubsStore } from '@/stores/clubs'
 import { DayOfWeek } from '@/api'
 import type { TrainingBrief } from '@/api'
 import BackButton from '@/components/BackButton.vue'
+import NumberWheel from '@/components/NumberWheel.vue'
+import TimeWheel from '@/components/TimeWheel.vue'
 
 const props = defineProps<{ clubId: string; trainingId?: string }>()
 const router = useRouter()
@@ -50,7 +75,13 @@ const isEdit = computed(() => props.trainingId !== undefined)
 const dayOfWeek = ref<DayOfWeek>(DayOfWeek.MONDAY)
 const startTime = ref('18:00')
 const endTime = ref('20:00')
-const maxPlayers = ref(10)
+const maxPlayers = ref(2)
+const wheelOpen = ref(false)
+const openTimeField = ref<'start' | 'end' | null>(null)
+
+function toggleTimeField(field: 'start' | 'end') {
+  openTimeField.value = openTimeField.value === field ? null : field
+}
 
 const club = computed(() => clubs.currentClub)
 
@@ -66,7 +97,7 @@ const dayLabels: Record<string, string> = {
 const days = Object.values(DayOfWeek).map(value => ({ value, label: dayLabels[value] }))
 
 const isValid = computed(() =>
-  startTime.value && endTime.value && maxPlayers.value > 0
+  startTime.value && endTime.value && maxPlayers.value >= 2
 )
 
 onMounted(async () => {
@@ -134,6 +165,61 @@ h1 {
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
+}
+
+.time-input {
+  position: relative;
+}
+
+.time-input .time-wheel {
+  margin-top: 0.4rem;
+}
+
+.time-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  min-height: 44px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.time-value svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.time-value:hover,
+.time-value.open {
+  border-color: var(--color-primary);
+}
+
+.max-players-value {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  min-height: 44px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.max-players-value:hover {
+  border-color: var(--color-primary);
 }
 
 .form-actions {

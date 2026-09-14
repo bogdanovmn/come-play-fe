@@ -18,11 +18,11 @@
         <span class="label">Клуб создан</span>
         <span class="value">{{ formatDate(clubs.currentClub.createdAt) }}</span>
       </div>
-      <div class="info-row info-text">
+      <div class="info-text">
         <span class="label">Описание</span>
-        <span class="value" :class="{ empty: !clubs.currentClub.description }">
+        <p class="description" :class="{ empty: !clubs.currentClub.description }">
           {{ clubs.currentClub.description || 'Описание пока не добавлено.' }}
-        </span>
+        </p>
       </div>
       <div v-if="clubs.currentClub.closed" class="closed-badge">Клуб закрыт</div>
     </div>
@@ -82,10 +82,6 @@ h1 {
   border-bottom: none;
 }
 
-.info-text {
-  align-items: flex-start;
-}
-
 .label {
   color: var(--color-muted);
   min-width: 150px;
@@ -95,12 +91,36 @@ h1 {
   font-weight: 500;
   flex: 1;
   word-break: break-word;
-  white-space: pre-wrap;
 }
 
-.value.empty {
+.info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-row-border);
+}
+
+.info-text:last-of-type {
+  border-bottom: none;
+}
+
+.info-text .label {
+  display: block;
+}
+
+.description {
+  width: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.description.empty {
   color: var(--color-muted);
-  font-weight: 400;
 }
 
 .closed-badge {

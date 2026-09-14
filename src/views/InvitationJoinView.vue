@@ -1,6 +1,5 @@
 <template>
   <div class="invitation-join">
-    <BackButton fallback="/" />
     <div v-if="loading" class="loading">Загрузка...</div>
 
     <div v-else-if="error" class="error">
@@ -26,7 +25,6 @@ import { useRouter } from 'vue-router'
 import * as api from '@/api'
 import type { InvitationInfo } from '@/api'
 import { authStore } from '@/stores/auth'
-import BackButton from '@/components/BackButton.vue'
 
 const props = defineProps<{ invitationId: string }>()
 const router = useRouter()

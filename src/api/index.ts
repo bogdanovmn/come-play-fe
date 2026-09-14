@@ -60,6 +60,8 @@ export interface TrainingBrief {
 export interface TrainingSlot {
   id: string
   trainingId: string
+  clubId: string
+  clubName: string
   slotDate: string
   dayOfWeek: string
   startTime: string

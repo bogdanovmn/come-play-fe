@@ -12,8 +12,11 @@
     </div>
 
     <div v-if="trainings.slot" class="slot-meta">
-      <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
-      <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
+      <div class="slot-club">Клуб {{ trainings.slot.clubName }}</div>
+      <div class="slot-when">
+        <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
+        <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
+      </div>
     </div>
 
     <div class="tab-bar">
@@ -38,13 +41,16 @@
         </div>
       </div>
 
-      <div v-if="profile.friends.length > 0" class="section">
-        <h2>Друзья</h2>
+      <div v-if="availableFriends.length > 0" class="section">
+        <h2>Добавить друга</h2>
         <div class="friend-list">
-          <div v-for="f in profile.friends" :key="f.id" class="friend-item">
+          <div v-for="f in availableFriends" :key="f.id" class="friend-item">
             <span>{{ f.name }}</span>
-            <button @click="handleToggleFriend(f.id)">
-              {{ isFriendEnrolled(f.id) ? 'Снять запись' : 'Записать' }}
+            <button class="btn-add-friend" title="Записать" aria-label="Записать" @click="handleAddFriend(f.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
             </button>
           </div>
         </div>
@@ -114,6 +120,10 @@ const isEnrolled = computed(() =>
 const isFriendEnrolled = (friendId: string): boolean =>
   enrollments.enrollments.some(e => e.friendId === friendId)
 
+const availableFriends = computed(() =>
+  profile.friends.filter(f => !isFriendEnrolled(f.id))
+)
+
 function canCancel(e: Enrollment): boolean {
   return profile.profile !== null && e.enrolledBy === profile.profile.id
 }
@@ -146,12 +156,8 @@ async function handleCancel(e: Enrollment) {
   await reloadSlot()
 }
 
-async function handleToggleFriend(friendId: string) {
-  if (isFriendEnrolled(friendId)) {
-    await enrollments.unenroll(props.slotId, friendId)
-  } else {
-    await enrollments.enroll(props.slotId, friendId)
-  }
+async function handleAddFriend(friendId: string) {
+  await enrollments.enroll(props.slotId, friendId)
   await reloadSlot()
 }
 
@@ -183,10 +189,21 @@ h1 {
 
 .slot-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.25rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
+}
+
+.slot-club {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.slot-when {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .slot-date,
@@ -279,18 +296,28 @@ h1 {
   height: 18px;
 }
 
-.friend-item button {
-  padding: 0.4rem 0.8rem;
+.btn-add-friend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
   border: 1px solid var(--color-primary);
+  border-radius: 50%;
+  background: none;
   color: var(--color-primary);
-  border-radius: 4px;
   cursor: pointer;
-  background: var(--color-surface);
-  min-height: 40px;
 }
 
-.friend-item button:hover {
+.btn-add-friend:hover {
   background: var(--color-primary-soft);
+}
+
+.btn-add-friend svg {
+  width: 18px;
+  height: 18px;
 }
 
 .comment-item {
