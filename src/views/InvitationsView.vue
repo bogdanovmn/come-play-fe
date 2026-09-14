@@ -91,7 +91,7 @@ async function handleCreate() {
 }
 
 async function copyLink(invitationId: string) {
-  const url = `${window.location.origin}/come-play/invitations/${invitationId}`
+  const url = `${window.location.origin}/comeplay/invitations/${invitationId}`
   await navigator.clipboard.writeText(url)
   showCopyInfo.value = true
 }

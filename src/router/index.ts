@@ -4,14 +4,14 @@ import { tokenStorage } from '@bogdanovmn/ssofw'
 import HomeView from '@/views/HomeView.vue'
 
 const router = createRouter({
-  history: createWebHistory('/come-play/'),
+  history: createWebHistory('/comeplay/'),
   routes: [
     { path: '/', component: HomeView },
     {
       path: '/login',
       redirect: () => {
         const ssoUrl = import.meta.env.VITE_SSO_FRONT_URL
-        const redirectUri = `${window.location.origin}/come-play/sso-callback`
+        const redirectUri = `${window.location.origin}/comeplay/sso-callback`
         window.location.href = `${ssoUrl}/login?from=${encodeURIComponent(redirectUri)}`
         return '/'
       }
