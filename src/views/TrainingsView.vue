@@ -11,10 +11,24 @@
 
     <div v-else class="club-list">
       <div v-for="club in clubs.memberClubs" :key="club.id" class="club-card" @click="router.push(`/clubs/${club.id}/trainings`)">
-        <h3 class="club-title">
-          {{ club.name }}
-          <span class="sport-type">{{ club.sportTypeName }}</span>
-        </h3>
+        <div class="club-card-head">
+          <h3 class="club-title">
+            {{ club.name }}
+            <span class="sport-type">{{ club.sportTypeName }}</span>
+          </h3>
+          <button
+            v-if="!isOwned(club.id)"
+            class="leave-btn"
+            title="Выйти из клуба"
+            aria-label="Выйти из клуба"
+            @click.stop="handleLeave(club)"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
         <span class="members">{{ club.membersCount }} {{ pluralRu(club.membersCount, 'участник', 'участника', 'участников') }}</span>
       </div>
     </div>
@@ -22,17 +36,34 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { clubsStore } from '@/stores/clubs'
+import * as api from '@/api'
+import type { ClubBrief } from '@/api'
 import { pluralRu } from '@/utils/plural'
 
 const router = useRouter()
 const clubs = clubsStore()
 
-onMounted(() => {
-  clubs.loadMember()
+const ownedIds = computed(() => new Set(clubs.ownedClubs.map(c => c.id)))
+
+function isOwned(clubId: string): boolean {
+  return ownedIds.value.has(clubId)
+}
+
+onMounted(async () => {
+  await Promise.all([
+    clubs.loadMember(),
+    clubs.loadOwned()
+  ])
 })
+
+async function handleLeave(club: ClubBrief) {
+  if (!window.confirm(`Выйти из клуба «${club.name}»?`)) return
+  await api.leaveClub(club.id)
+  clubs.removeFromMemberClubs(club.id)
+}
 </script>
 
 <style scoped>
@@ -59,9 +90,43 @@ h1 {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.club-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
 .club-card:hover {
   border-color: var(--color-primary);
   box-shadow: 0 1px 4px rgba(93, 74, 53, 0.15);
+}
+
+.leave-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.leave-btn:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.leave-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .club-title {

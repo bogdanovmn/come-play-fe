@@ -5,40 +5,53 @@
       <h1>{{ clubs.currentClub.name }}</h1>
     </div>
 
-    <div class="info-card">
-      <div class="info-row">
-        <span class="label">Вид спорта</span>
-        <span class="value">{{ clubs.currentClub.sportTypeName }}</span>
+    <div class="tab-bar">
+      <button :class="{ active: tab === 'info' }" @click="tab = 'info'">Информация</button>
+      <button :class="{ active: tab === 'members' }" @click="tab = 'members'">Участники</button>
+    </div>
+
+    <div v-if="tab === 'info'">
+      <div class="info-card">
+        <div class="info-row">
+          <span class="label">Вид спорта</span>
+          <span class="value">{{ clubs.currentClub.sportTypeName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Владелец</span>
+          <span class="value">{{ clubs.currentClub.ownerName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Клуб создан</span>
+          <span class="value">{{ formatDate(clubs.currentClub.createdAt) }}</span>
+        </div>
+        <div class="info-text">
+          <span class="label">Описание</span>
+          <p class="description" :class="{ empty: !clubs.currentClub.description }">
+            {{ clubs.currentClub.description || 'Описание пока не добавлено.' }}
+          </p>
+        </div>
+        <div v-if="clubs.currentClub.closed" class="closed-badge">Клуб закрыт</div>
       </div>
-      <div class="info-row">
-        <span class="label">Владелец</span>
-        <span class="value">{{ clubs.currentClub.ownerName }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Клуб создан</span>
-        <span class="value">{{ formatDate(clubs.currentClub.createdAt) }}</span>
-      </div>
-      <div class="info-text">
-        <span class="label">Описание</span>
-        <p class="description" :class="{ empty: !clubs.currentClub.description }">
-          {{ clubs.currentClub.description || 'Описание пока не добавлено.' }}
-        </p>
-      </div>
-      <div v-if="clubs.currentClub.closed" class="closed-badge">Клуб закрыт</div>
+    </div>
+
+    <div v-else class="members-block">
+      <ClubMembers :club-id="clubId" />
     </div>
   </div>
   <div v-else class="loading">Загрузка...</div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { clubsStore } from '@/stores/clubs'
 import BackButton from '@/components/BackButton.vue'
+import ClubMembers from '@/components/ClubMembers.vue'
 
 const props = defineProps<{ clubId: string }>()
 const clubs = clubsStore()
+const tab = ref<'info' | 'members'>('info')
 
 function formatDate(value: string) {
   return format(new Date(value), 'd MMM yyyy', { locale: ru })
@@ -69,6 +82,34 @@ h1 {
   background: var(--color-surface);
   padding: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.members-block {
+  max-width: 640px;
+}
+
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-bar button {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: none;
+  color: var(--color-muted);
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.tab-bar button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
 }
 
 .info-row {

@@ -23,7 +23,12 @@
 
     <div v-if="clubs.currentClub.closed" class="closed-badge">Клуб закрыт</div>
 
-    <div v-if="isOwner" class="schedule-manage">
+    <div class="tab-bar">
+      <button v-if="isOwner" :class="{ active: tab === 'schedule' }" @click="tab = 'schedule'">Расписание</button>
+      <button :class="{ active: tab === 'members' }" @click="tab = 'members'">Участники</button>
+    </div>
+
+    <div v-if="isOwner && tab === 'schedule'" class="schedule-manage">
       <div class="schedule-header">
         <h2>Расписание периодических тренировок</h2>
       </div>
@@ -39,30 +44,49 @@
             {{ formatTime(t.startTime) }} – {{ formatTime(t.endTime) }} ({{ t.maxPlayers }} {{ pluralRu(t.maxPlayers, 'человек', 'человека', 'человек') }})
           </span>
           <span class="training-actions">
-            <router-link :to="`/clubs/${clubId}/trainings/${t.id}/edit`">Изменить</router-link>
-            <button @click="handleDelete(t.id)">Удалить</button>
+            <router-link :to="`/clubs/${clubId}/trainings/${t.id}/edit`" class="btn-icon" title="Изменить" aria-label="Изменить">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </router-link>
+            <button class="btn-icon btn-icon-danger" title="Удалить" aria-label="Удалить" @click="handleDelete(t.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
           </span>
         </div>
       </div>
       <router-link :to="`/clubs/${clubId}/trainings/new`" class="btn-primary add-btn">Добавить</router-link>
+    </div>
+
+    <div v-else-if="tab === 'members'" class="members-block">
+      <div class="schedule-header">
+        <h2>Участники клуба</h2>
+      </div>
+      <ClubMembers :club-id="clubId" />
     </div>
   </div>
   <div v-else class="loading">Загрузка...</div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { clubsStore } from '@/stores/clubs'
 import { trainingsStore } from '@/stores/trainings'
 import { profileStore } from '@/stores/profile'
 import { DayOfWeek } from '@/api'
 import BackButton from '@/components/BackButton.vue'
+import ClubMembers from '@/components/ClubMembers.vue'
 import { pluralRu } from '@/utils/plural'
 
 const props = defineProps<{ clubId: string }>()
 const clubs = clubsStore()
 const trainings = trainingsStore()
 const profile = profileStore()
+const tab = ref<'schedule' | 'members'>('members')
 
 const isOwner = computed(() =>
   clubs.currentClub !== null && profile.profile !== null &&
@@ -93,6 +117,7 @@ onMounted(async () => {
     profile.loadProfile(),
     trainings.loadTrainings(props.clubId)
   ])
+  tab.value = isOwner.value ? 'schedule' : 'members'
 })
 
 async function handleDelete(trainingId: string) {
@@ -179,6 +204,11 @@ h1 {
   max-width: 720px;
 }
 
+.members-block {
+  margin-top: 2rem;
+  max-width: 640px;
+}
+
 .schedule-header {
   display: flex;
   align-items: center;
@@ -189,6 +219,31 @@ h1 {
 
 .schedule-header h2 {
   font-size: 1.05rem;
+  margin: 0;
+}
+
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-bar button {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: none;
+  color: var(--color-muted);
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.tab-bar button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
 }
 
 .training-list {
@@ -215,21 +270,42 @@ h1 {
   align-items: center;
 }
 
-.training-actions a,
-.training-actions button {
-  padding: 0.45rem 0.9rem;
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 50%;
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-primary);
   text-decoration: none;
-  min-height: 38px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
-.training-actions button {
+.btn-icon:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+  border-color: var(--color-primary);
+}
+
+.btn-icon.btn-icon-danger {
+  color: var(--color-danger);
+}
+
+.btn-icon.btn-icon-danger:hover {
+  background: var(--color-danger-soft);
   color: var(--color-danger);
   border-color: var(--color-danger);
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .loading, .empty {

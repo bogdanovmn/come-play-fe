@@ -5,7 +5,7 @@
       <h1>Запись на тренировки</h1>
     </div>
     <div v-if="club" class="heading-sub">
-      <span>в клуб {{ club.name }}</span>
+      <span>Клуб {{ club.name }}</span>
       <router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -91,7 +91,7 @@ h1 { font-size: 1.35rem; margin: 0; }
   gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--color-muted);
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 48px;
 }
 
 .info-icon {

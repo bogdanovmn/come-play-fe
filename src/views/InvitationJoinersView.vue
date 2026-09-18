@@ -4,7 +4,16 @@
       <BackButton :fallback="`/clubs/${clubId}/invitations`" />
       <h1>Участники</h1>
     </div>
-    <div class="heading-sub">в клуб {{ club.name }}</div>
+    <div class="heading-sub">
+      <span>Клуб {{ club.name }}</span>
+      <router-link :to="`/clubs/${clubId}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </router-link>
+    </div>
 
     <div v-if="joiners.length === 0" class="empty">Никто ещё не присоединился по этому приглашению.</div>
 
@@ -70,9 +79,29 @@ h1 {
 }
 
 .heading-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--color-muted);
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 48px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  transition: color 0.2s;
+}
+
+.info-icon:hover {
+  color: var(--color-primary);
+}
+
+.info-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .table-wrap {

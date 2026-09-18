@@ -4,14 +4,26 @@
       <BackButton :fallback="`/clubs/${clubId}`" />
       <h1>Приглашения</h1>
     </div>
-    <div v-if="club" class="heading-sub">в клуб {{ club.name }}</div>
+    <div v-if="club" class="heading-sub">
+      <span>Клуб {{ club.name }}</span>
+      <router-link :to="`/clubs/${clubId}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </router-link>
+    </div>
 
     <div v-if="invitationList.length === 0" class="empty">Пока нет приглашений.</div>
 
     <div v-else class="invitation-list">
-      <div v-for="inv in invitationList" :key="inv.id" class="invitation-card">
+      <div v-for="inv in invitationList" :key="inv.id" class="invitation-card" :class="{ inactive: !inv.active }">
         <div class="invitation-info">
-          <strong>{{ inv.name }}</strong>
+          <div class="invitation-head">
+            <strong>{{ inv.name }}</strong>
+            <span v-if="!inv.active" class="inactive-badge">Неактивно</span>
+          </div>
           <span class="joined">{{ inv.joinedCount }} {{ pluralRu(inv.joinedCount, 'присоединился', 'присоединились', 'присоединились') }}</span>
         </div>
         <div class="invitation-actions">
@@ -23,10 +35,16 @@
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </router-link>
-          <button class="btn-icon" title="Копировать ссылку" aria-label="Копировать ссылку" @click="copyLink(inv.id)">
+          <button v-if="inv.active" class="btn-icon" title="Копировать ссылку" aria-label="Копировать ссылку" @click="copyLink(inv.id)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </button>
+          <button v-if="inv.active" class="btn-icon btn-icon-danger" title="Удалить приглашение" aria-label="Удалить приглашение" @click="handleDelete(inv)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
           </button>
         </div>
@@ -95,6 +113,12 @@ async function copyLink(invitationId: string) {
   await navigator.clipboard.writeText(url)
   showCopyInfo.value = true
 }
+
+async function handleDelete(inv: InvitationBrief) {
+  if (!window.confirm(`Удалить приглашение «${inv.name}»? Ссылка перестанет работать.`)) return
+  await api.deleteInvitation(props.clubId, inv.id)
+  inv.active = false
+}
 </script>
 
 <style scoped>
@@ -112,9 +136,29 @@ h1 {
 }
 
 .heading-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--color-muted);
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 48px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  transition: color 0.2s;
+}
+
+.info-icon:hover {
+  color: var(--color-primary);
+}
+
+.info-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .btn-primary {
@@ -157,6 +201,27 @@ h1 {
   min-width: 0;
 }
 
+.invitation-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.inactive-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  white-space: nowrap;
+}
+
+.invitation-card.inactive {
+  opacity: 0.55;
+}
+
 .invitation-actions {
   display: flex;
   align-items: center;
@@ -191,6 +256,16 @@ h1 {
   background: var(--color-primary-soft);
   color: var(--color-primary-hover);
   border-color: var(--color-primary);
+}
+
+.btn-icon.btn-icon-danger {
+  color: var(--color-danger);
+}
+
+.btn-icon.btn-icon-danger:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .btn-icon svg {

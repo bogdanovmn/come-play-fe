@@ -7,6 +7,7 @@ export const clubsStore = defineStore('clubsStore', () => {
   const ownedClubs = ref<ClubBrief[]>([])
   const memberClubs = ref<ClubBrief[]>([])
   const currentClub = ref<api.Club | null>(null)
+  const members = ref<api.ClubMember[]>([])
   const isLoading = ref(false)
   const isCreating = ref(false)
 
@@ -35,6 +36,19 @@ export const clubsStore = defineStore('clubsStore', () => {
     } finally {
       isLoading.value = false
     }
+  }
+
+  async function loadMembers(clubId: string): Promise<void> {
+    isLoading.value = true
+    try {
+      members.value = await api.listClubMembers(clubId)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  function removeFromMemberClubs(clubId: string): void {
+    memberClubs.value = memberClubs.value.filter(c => c.id !== clubId)
   }
 
   async function create(name: string, sportTypeId: number): Promise<ClubBrief> {
@@ -67,5 +81,5 @@ export const clubsStore = defineStore('clubsStore', () => {
     }
   }
 
-  return { ownedClubs, memberClubs, currentClub, isLoading, isCreating, loadOwned, loadMember, loadClub, create, update, close }
+  return { ownedClubs, memberClubs, currentClub, members, isLoading, isCreating, loadOwned, loadMember, loadClub, loadMembers, removeFromMemberClubs, create, update, close }
 })

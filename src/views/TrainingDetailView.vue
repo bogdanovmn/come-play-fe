@@ -11,8 +11,18 @@
       </div>
     </div>
 
+    <div v-if="trainings.slot" class="heading-sub">
+      <span>Клуб {{ trainings.slot.clubName }}</span>
+      <router-link :to="`/clubs/${trainings.slot.clubId}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </router-link>
+    </div>
+
     <div v-if="trainings.slot" class="slot-meta">
-      <div class="slot-club">Клуб {{ trainings.slot.clubName }}</div>
       <div class="slot-when">
         <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
         <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
@@ -195,11 +205,6 @@ h1 {
   font-size: 0.9rem;
 }
 
-.slot-club {
-  color: var(--color-text);
-  font-weight: 600;
-}
-
 .slot-when {
   display: flex;
   flex-wrap: wrap;
@@ -209,6 +214,32 @@ h1 {
 .slot-date,
 .slot-time {
   color: var(--color-muted);
+}
+
+.heading-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0 0 0.25rem 48px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  transition: color 0.2s;
+}
+
+.info-icon:hover {
+  color: var(--color-primary);
+}
+
+.info-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .btn-primary {

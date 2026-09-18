@@ -26,6 +26,7 @@ export interface InvitationBrief {
   id: string
   name: string
   joinedCount: number
+  active: boolean
 }
 
 export interface Invitation {
@@ -104,6 +105,11 @@ export interface FriendBrief {
   name: string
 }
 
+export interface ClubMember {
+  id: string
+  name: string
+}
+
 export interface VisitByDay {
   date: string
   visitCount: number
@@ -150,6 +156,14 @@ export async function closeClub(clubId: string): Promise<void> {
   return authApi.put(`/clubs/${clubId}/close`)
 }
 
+export async function listClubMembers(clubId: string): Promise<ClubMember[]> {
+  return authApi.get<ClubMember[]>(`/clubs/${clubId}/members`)
+}
+
+export async function leaveClub(clubId: string): Promise<void> {
+  return authApi.delete(`/clubs/${clubId}/members`)
+}
+
 // ===================== INVITATION API =====================
 
 export async function listInvitations(clubId: string): Promise<InvitationBrief[]> {
@@ -158,6 +172,10 @@ export async function listInvitations(clubId: string): Promise<InvitationBrief[]
 
 export async function createInvitation(clubId: string, name: string): Promise<Invitation> {
   return authApi.post<Invitation>(`/clubs/${clubId}/invitations`, { name })
+}
+
+export async function deleteInvitation(clubId: string, invitationId: string): Promise<void> {
+  return authApi.delete(`/clubs/${clubId}/invitations/${invitationId}`)
 }
 
 export async function joinByInvitation(invitationId: string): Promise<void> {
