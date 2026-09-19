@@ -22,11 +22,10 @@
       </router-link>
     </div>
 
-    <div v-if="trainings.slot" class="slot-meta">
-      <div class="slot-when">
-        <span class="slot-date">{{ formatDate(trainings.slot.slotDate) }}</span>
-        <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
-      </div>
+    <div v-if="trainings.slot" class="slot-when">
+      <span class="slot-dow">{{ weekday(trainings.slot.slotDate) }}, </span>
+      <span class="slot-date-muted">{{ monthDay(trainings.slot.slotDate) }}</span>
+      <span class="slot-time">{{ formatTime(trainings.slot.startTime) }} – {{ formatTime(trainings.slot.endTime) }}</span>
     </div>
 
     <div class="tab-bar">
@@ -40,7 +39,17 @@
         <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
           <div v-for="e in enrollments.enrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
-            <span>{{ e.name }}</span>
+            <span class="enrollment-name">
+              {{ e.name }}
+              <button
+                v-if="e.userId === profile.profile?.id"
+                class="coming-toggle"
+                :class="{ active: e.comingLater }"
+                :disabled="comingLaterLoading"
+                @click="handleToggleComingLater"
+              >Приду позднее</button>
+              <span v-else-if="e.comingLater" class="coming-badge">придёт позже</span>
+            </span>
             <button v-if="canCancel(e)" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -115,8 +124,12 @@ function formatTime(value: string): string {
   return value.length > 5 ? value.slice(0, 5) : value
 }
 
-function formatDate(dateStr: string) {
-  return format(new Date(dateStr), 'd MMMM, EEEE', { locale: ru })
+function weekday(dateStr: string) {
+  return format(new Date(dateStr), 'EEEE', { locale: ru })
+}
+
+function monthDay(dateStr: string) {
+  return format(new Date(dateStr), 'd MMMM', { locale: ru })
 }
 
 function formatCommentDate(value: string) {
@@ -126,6 +139,24 @@ function formatCommentDate(value: string) {
 const isEnrolled = computed(() =>
   profile.profile !== null && enrollments.enrollments.some(e => e.userId === profile.profile!.id)
 )
+
+const myComingLater = computed(() => {
+  if (profile.profile === null) return false
+  const mine = enrollments.enrollments.find(e => e.userId === profile.profile!.id)
+  return mine?.comingLater ?? false
+})
+
+const comingLaterLoading = ref(false)
+
+async function handleToggleComingLater() {
+  if (comingLaterLoading.value) return
+  comingLaterLoading.value = true
+  try {
+    await enrollments.setComingLater(props.slotId, !myComingLater.value)
+  } finally {
+    comingLaterLoading.value = false
+  }
+}
 
 const isFriendEnrolled = (friendId: string): boolean =>
   enrollments.enrollments.some(e => e.friendId === friendId)
@@ -195,25 +226,77 @@ h1 {
 
 .actions {
   margin-left: auto;
-}
-
-.slot-meta {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .slot-when {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0 0 1rem 48px;
+  font-size: 0.95rem;
 }
 
-.slot-date,
-.slot-time {
+.slot-dow {
+  font-weight: bold;
+}
+
+.slot-date-muted {
   color: var(--color-muted);
+  font-weight: 400;
+}
+
+.slot-time {
+  font-weight: bold;
+}
+
+.enrollment-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.coming-toggle {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.coming-toggle:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.coming-toggle.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.coming-toggle:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.coming-badge {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
 }
 
 .heading-sub {

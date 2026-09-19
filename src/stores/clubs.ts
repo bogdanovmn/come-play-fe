@@ -81,5 +81,12 @@ export const clubsStore = defineStore('clubsStore', () => {
     }
   }
 
-  return { ownedClubs, memberClubs, currentClub, members, isLoading, isCreating, loadOwned, loadMember, loadClub, loadMembers, removeFromMemberClubs, create, update, close }
+  async function open(clubId: string): Promise<void> {
+    await api.openClub(clubId)
+    if (currentClub.value?.id === clubId) {
+      currentClub.value = { ...currentClub.value, closed: false }
+    }
+  }
+
+  return { ownedClubs, memberClubs, currentClub, members, isLoading, isCreating, loadOwned, loadMember, loadClub, loadMembers, removeFromMemberClubs, create, update, close, open }
 })

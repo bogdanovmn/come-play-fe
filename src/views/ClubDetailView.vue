@@ -2,7 +2,6 @@
   <div class="club-detail" v-if="clubs.currentClub">
     <div class="header">
       <BackButton fallback="/trainings" />
-      <h1>{{ clubs.currentClub.name }}</h1>
       <div class="actions" v-if="isOwner">
         <router-link :to="`/clubs/${clubId}/edit`" class="icon-link" title="Настройки" aria-label="Настройки">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -21,6 +20,11 @@
       </div>
     </div>
 
+    <h1 class="club-title">
+      {{ clubs.currentClub.name }}
+      <span class="sport-badge">{{ clubs.currentClub.sportTypeName }}</span>
+    </h1>
+
     <div v-if="clubs.currentClub.closed" class="closed-badge">Клуб закрыт</div>
 
     <div class="tab-bar">
@@ -29,10 +33,6 @@
     </div>
 
     <div v-if="isOwner && tab === 'schedule'" class="schedule-manage">
-      <div class="schedule-header">
-        <h2>Расписание периодических тренировок</h2>
-      </div>
-
       <div v-if="trainings.isLoading" class="loading">Загрузка...</div>
       <div v-else-if="trainings.trainings.length === 0" class="empty">
         Вы пока не создали ни одной тренировки. Создайте расписание, чтобы игроки могли записываться.
@@ -63,9 +63,6 @@
     </div>
 
     <div v-else-if="tab === 'members'" class="members-block">
-      <div class="schedule-header">
-        <h2>Участники клуба</h2>
-      </div>
       <ClubMembers :club-id="clubId" />
     </div>
   </div>
@@ -131,9 +128,27 @@ async function handleDelete(trainingId: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
   gap: 0.5rem;
+}
+
+.club-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  font-size: 1.4rem;
+  margin: 0 0 0.5rem;
+}
+
+.sport-badge {
+  font-size: 0.75rem;
+  font-weight: 400;
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+  border-radius: 4px;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
 }
 
 h1 {
@@ -207,19 +222,6 @@ h1 {
 .members-block {
   margin-top: 2rem;
   max-width: 640px;
-}
-
-.schedule-header {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.schedule-header h2 {
-  font-size: 1.05rem;
-  margin: 0;
 }
 
 .tab-bar {

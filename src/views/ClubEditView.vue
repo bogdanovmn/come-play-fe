@@ -24,7 +24,8 @@
 
       <div class="form-actions">
         <button @click="handleSave" :disabled="!name.trim()">Сохранить</button>
-        <button class="btn-close" @click="handleClose" v-if="!clubs.currentClub.closed">Закрыть клуб</button>
+        <button v-if="clubs.currentClub.closed" class="btn-open" @click="handleOpen">Открыть клуб</button>
+        <button v-else class="btn-close" @click="handleClose">Закрыть клуб</button>
       </div>
     </div>
   </div>
@@ -75,6 +76,11 @@ async function handleClose() {
     await clubs.close(props.clubId)
     router.push(`/clubs/${props.clubId}`)
   }
+}
+
+async function handleOpen() {
+  await clubs.open(props.clubId)
+  router.push(`/clubs/${props.clubId}`)
 }
 </script>
 
@@ -147,5 +153,9 @@ h1 {
 
 .btn-close {
   color: var(--color-danger) !important;
+}
+
+.btn-open {
+  color: var(--color-primary) !important;
 }
 </style>

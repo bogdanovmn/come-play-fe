@@ -60,6 +60,7 @@ function select(n: number) {
 }
 
 watch(() => props.modelValue, (value) => scrollToValue(value))
+watch(() => [props.min, props.max, props.step], () => scrollToValue(props.modelValue), { immediate: true })
 
 onMounted(() => {
   scrollToValue(props.modelValue)

@@ -4,11 +4,20 @@
       <BackButton fallback="/trainings" />
       <h1>{{ isEdit ? 'Изменить тренировку' : 'Новая тренировка' }}</h1>
     </div>
-    <div class="club-sport" v-if="club">
-      Вид спорта: <strong>{{ club.sportTypeName }}</strong>
+    <div v-if="club" class="heading-sub">
+      <span>Клуб {{ club.name }}</span>
+      <router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </router-link>
     </div>
 
     <div class="form">
+      <h2 class="sport-title" v-if="club">{{ club.sportTypeName }}</h2>
+
       <label>День недели</label>
       <select v-model="dayOfWeek">
         <option v-for="day in days" :key="day.value" :value="day.value">{{ day.label }}</option>
@@ -23,7 +32,7 @@
           </svg>
           <span>{{ startTime }}</span>
         </button>
-        <TimeWheel v-if="openTimeField === 'start'" v-model="startTime" @select="openTimeField = null" />
+        <TimeWheel v-if="openTimeField === 'start'" v-model="startTime" min="00:00" :max="startMax" @select="openTimeField = null" />
       </div>
 
       <label>Конец</label>
@@ -35,7 +44,8 @@
           </svg>
           <span>{{ endTime }}</span>
         </button>
-        <TimeWheel v-if="openTimeField === 'end'" v-model="endTime" @select="openTimeField = null" />
+        <TimeWheel v-if="openTimeField === 'end'" v-model="endTime" :min="minEndTime" max="23:55" @select="openTimeField = null" />
+        <div v-if="timeError" class="time-error">Конец должен быть позже начала</div>
       </div>
 
       <label>Максимум игроков</label>
@@ -46,8 +56,11 @@
         <NumberWheel v-if="wheelOpen" v-model="maxPlayers" :min="2" :max="50" @select="wheelOpen = false" />
       </div>
 
+      <label>Особенности</label>
+      <textarea v-model="features" rows="3" maxlength="1000" placeholder="Например: приносить ракетки на всякий случай"></textarea>
+
       <div class="form-actions">
-        <router-link :to="`/clubs/${clubId}/trainings`">Отмена</router-link>
+        <button type="button" class="btn-cancel" @click="cancel">Отмена</button>
         <button class="btn-primary" @click="handleSubmit" :disabled="!isValid">{{ isEdit ? 'Сохранить' : 'Создать' }}</button>
       </div>
     </div>
@@ -55,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { trainingsStore } from '@/stores/trainings'
 import { clubsStore } from '@/stores/clubs'
@@ -72,10 +85,25 @@ const clubs = clubsStore()
 
 const isEdit = computed(() => props.trainingId !== undefined)
 
+const MIN_DURATION_MINUTES = 30
+const startMax = '23:00'
+
+function parseMinutes(value: string): number {
+  const [h, m] = value.split(':').map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+
+function formatMinutes(total: number): string {
+  const hh = Math.floor(total / 60)
+  const mm = total % 60
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+
 const dayOfWeek = ref<DayOfWeek>(DayOfWeek.MONDAY)
 const startTime = ref('18:00')
 const endTime = ref('20:00')
 const maxPlayers = ref(2)
+const features = ref('')
 const wheelOpen = ref(false)
 const openTimeField = ref<'start' | 'end' | null>(null)
 
@@ -84,6 +112,22 @@ function toggleTimeField(field: 'start' | 'end') {
 }
 
 const club = computed(() => clubs.currentClub)
+
+const minEndTime = computed(() => formatMinutes(parseMinutes(startTime.value) + MIN_DURATION_MINUTES))
+
+const timeError = computed(() =>
+  !endTime.value || !startTime.value || parseMinutes(endTime.value) <= parseMinutes(startTime.value)
+)
+
+const isValid = computed(() =>
+  startTime.value && endTime.value && maxPlayers.value >= 2 && !timeError.value
+)
+
+watch(startTime, (value) => {
+  if (!endTime.value || parseMinutes(endTime.value) <= parseMinutes(value)) {
+    endTime.value = formatMinutes(parseMinutes(value) + MIN_DURATION_MINUTES)
+  }
+})
 
 const dayLabels: Record<string, string> = {
   MONDAY: 'Понедельник',
@@ -96,10 +140,6 @@ const dayLabels: Record<string, string> = {
 }
 const days = Object.values(DayOfWeek).map(value => ({ value, label: dayLabels[value] }))
 
-const isValid = computed(() =>
-  startTime.value && endTime.value && maxPlayers.value >= 2
-)
-
 onMounted(async () => {
   clubs.loadClub(props.clubId)
   if (isEdit.value) {
@@ -110,17 +150,29 @@ onMounted(async () => {
       startTime.value = training.startTime
       endTime.value = training.endTime
       maxPlayers.value = training.maxPlayers
+      features.value = training.features ?? ''
     } else {
       router.push(`/clubs/${props.clubId}/trainings`)
     }
   }
 })
 
-async function handleSubmit() {
-  if (isEdit.value && props.trainingId) {
-    await store.update(props.clubId, props.trainingId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value)
+function cancel() {
+  const state = window.history.state as { back?: string } | null
+  if (state?.back) {
+    router.back()
   } else {
-    await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value)
+    router.push(`/clubs/${props.clubId}/trainings`)
+  }
+}
+
+async function handleSubmit() {
+  if (!isValid.value) return
+  const trimmedFeatures = features.value.trim() || null
+  if (isEdit.value && props.trainingId) {
+    await store.update(props.clubId, props.trainingId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value, trimmedFeatures)
+  } else {
+    await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value, trimmedFeatures)
   }
   router.push(`/clubs/${props.clubId}/trainings`)
 }
@@ -135,12 +187,33 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
-.club-sport {
-  margin-bottom: 1rem;
+.heading-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
   color: var(--color-muted);
+  margin: 0 0 1rem 48px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  transition: color 0.2s;
+}
+
+.info-icon:hover {
+  color: var(--color-primary);
+}
+
+.info-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .form {
@@ -151,6 +224,12 @@ h1 {
   background: var(--color-surface);
 }
 
+.sport-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+  color: var(--color-primary);
+}
+
 .form label {
   display: block;
   margin-top: 1rem;
@@ -158,13 +237,18 @@ h1 {
   font-weight: 500;
 }
 
-.form input, .form select {
+.form input, .form select, .form textarea {
   width: 100%;
   padding: 0.6rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   box-sizing: border-box;
   min-height: 44px;
+  font-family: inherit;
+}
+
+.form textarea {
+  resize: vertical;
 }
 
 .time-input {
@@ -204,6 +288,12 @@ h1 {
   border-color: var(--color-primary);
 }
 
+.time-error {
+  margin-top: 0.3rem;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+}
+
 .max-players-value {
   width: 100%;
   padding: 0.6rem;
@@ -229,27 +319,36 @@ h1 {
   margin-top: 2rem;
 }
 
-.form-actions a {
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text);
-  min-height: 40px;
-}
-
-.btn-primary {
+.form-actions button {
   padding: 0.55rem 1.2rem;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  border: none;
   border-radius: 4px;
   cursor: pointer;
   min-height: 40px;
   font-size: 1rem;
 }
 
-.btn-primary:hover {
+.btn-cancel {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-cancel:hover {
+  background: var(--color-primary-soft);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 </style>

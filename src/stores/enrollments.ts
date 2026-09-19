@@ -36,11 +36,16 @@ async function unenroll(slotId: string, friendId?: string): Promise<void> {
   await loadEnrollments(slotId)
 }
 
+async function setComingLater(slotId: string, comingLater: boolean): Promise<void> {
+  await api.setComingLater(slotId, comingLater)
+  await loadEnrollments(slotId)
+}
+
   async function addComment(slotId: string, text: string): Promise<Comment> {
     const comment = await api.createComment(slotId, text)
     comments.value.push(comment)
     return comment
   }
 
-  return { enrollments, comments, isLoading, loadEnrollments, loadComments, enroll, unenroll, addComment }
+  return { enrollments, comments, isLoading, loadEnrollments, loadComments, enroll, unenroll, setComingLater, addComment }
 })

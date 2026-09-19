@@ -56,6 +56,7 @@ export interface TrainingBrief {
   startTime: string
   endTime: string
   maxPlayers: number
+  features: string | null
 }
 
 export interface TrainingSlot {
@@ -70,6 +71,8 @@ export interface TrainingSlot {
   enrolledCount: number
   maxPlayers: number
   commentsCount: number
+  features: string | null
+  overridden: boolean
 }
 
 export interface Enrollment {
@@ -79,6 +82,7 @@ export interface Enrollment {
   name: string
   enrolledBy: string
   enrolledAt: string
+  comingLater: boolean
 }
 
 export interface Comment {
@@ -156,6 +160,10 @@ export async function closeClub(clubId: string): Promise<void> {
   return authApi.put(`/clubs/${clubId}/close`)
 }
 
+export async function openClub(clubId: string): Promise<void> {
+  return authApi.put(`/clubs/${clubId}/open`)
+}
+
 export async function listClubMembers(clubId: string): Promise<ClubMember[]> {
   return authApi.get<ClubMember[]>(`/clubs/${clubId}/members`)
 }
@@ -201,10 +209,11 @@ export async function createTraining(
   dayOfWeek: DayOfWeek,
   startTime: string,
   endTime: string,
-  maxPlayers: number
+  maxPlayers: number,
+  features: string | null
 ): Promise<TrainingBrief> {
   return authApi.post<TrainingBrief>(`/clubs/${clubId}/trainings`, {
-    dayOfWeek, startTime, endTime, maxPlayers
+    dayOfWeek, startTime, endTime, maxPlayers, features
   })
 }
 
@@ -218,10 +227,11 @@ export async function updateTraining(
   dayOfWeek: DayOfWeek,
   startTime: string,
   endTime: string,
-  maxPlayers: number
+  maxPlayers: number,
+  features: string | null
 ): Promise<TrainingBrief> {
   return authApi.put<TrainingBrief>(`/clubs/${clubId}/trainings/${trainingId}`, {
-    dayOfWeek, startTime, endTime, maxPlayers
+    dayOfWeek, startTime, endTime, maxPlayers, features
   })
 }
 
@@ -237,6 +247,22 @@ export async function listSlotsByTraining(clubId: string, trainingId: string): P
   return authApi.get<TrainingSlot[]>(`/clubs/${clubId}/trainings/${trainingId}/slots`)
 }
 
+export async function updateSlotParams(
+  slotId: string,
+  startTime: string,
+  endTime: string,
+  maxPlayers: number,
+  features: string | null
+): Promise<TrainingSlot> {
+  return authApi.put<TrainingSlot>(`/slots/${slotId}/params`, {
+    startTime, endTime, maxPlayers, features
+  })
+}
+
+export async function clearSlotParams(slotId: string): Promise<TrainingSlot> {
+  return authApi.delete<TrainingSlot>(`/slots/${slotId}/params`)
+}
+
 // ===================== ENROLLMENT API =====================
 
 export async function enroll(slotId: string, friendId?: string): Promise<void> {
@@ -249,6 +275,10 @@ export async function unenroll(slotId: string, friendId?: string): Promise<void>
 
 export async function listEnrollments(slotId: string): Promise<Enrollment[]> {
   return authApi.get<Enrollment[]>(`/slots/${slotId}/enrollments`)
+}
+
+export async function setComingLater(slotId: string, comingLater: boolean): Promise<void> {
+  return authApi.put(`/slots/${slotId}/coming-later`, { comingLater })
 }
 
 // ===================== COMMENT API =====================

@@ -50,9 +50,10 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     dayOfWeek: api.DayOfWeek,
     startTime: string,
     endTime: string,
-    maxPlayers: number
+    maxPlayers: number,
+    features: string | null
   ): Promise<TrainingBrief> {
-    const training = await api.createTraining(clubId, dayOfWeek, startTime, endTime, maxPlayers)
+    const training = await api.createTraining(clubId, dayOfWeek, startTime, endTime, maxPlayers, features)
     trainings.value.push(training)
     return training
   }
@@ -68,13 +69,37 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     dayOfWeek: api.DayOfWeek,
     startTime: string,
     endTime: string,
-    maxPlayers: number
+    maxPlayers: number,
+    features: string | null
   ): Promise<TrainingBrief> {
-    const training = await api.updateTraining(clubId, trainingId, dayOfWeek, startTime, endTime, maxPlayers)
+    const training = await api.updateTraining(clubId, trainingId, dayOfWeek, startTime, endTime, maxPlayers, features)
     const index = trainings.value.findIndex(t => t.id === trainingId)
     if (index !== -1) trainings.value[index] = training
     return training
   }
 
-  return { trainings, slots, slot, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, loadSlot, create, remove, update }
+  function replaceSlot(updated: TrainingSlot): void {
+    const index = slots.value.findIndex(s => s.id === updated.id)
+    if (index !== -1) slots.value[index] = updated
+  }
+
+  async function updateSlotParams(
+    slotId: string,
+    startTime: string,
+    endTime: string,
+    maxPlayers: number,
+    features: string | null
+  ): Promise<TrainingSlot> {
+    const updated = await api.updateSlotParams(slotId, startTime, endTime, maxPlayers, features)
+    replaceSlot(updated)
+    return updated
+  }
+
+  async function clearSlotParams(slotId: string): Promise<TrainingSlot> {
+    const updated = await api.clearSlotParams(slotId)
+    replaceSlot(updated)
+    return updated
+  }
+
+  return { trainings, slots, slot, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, loadSlot, create, remove, update, updateSlotParams, clearSlotParams }
 })
