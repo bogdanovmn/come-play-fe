@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { format } from 'date-fns'
 import { trainingsStore } from '@/stores/trainings'
 import { clubsStore } from '@/stores/clubs'
 import { DayOfWeek } from '@/api'
@@ -79,6 +80,7 @@ import type { TrainingBrief } from '@/api'
 import BackButton from '@/components/BackButton.vue'
 import NumberWheel from '@/components/NumberWheel.vue'
 import TimeWheel from '@/components/TimeWheel.vue'
+import { pluralRu } from '@/utils/plural'
 
 const props = defineProps<{ clubId: string; trainingId?: string }>()
 const router = useRouter()
@@ -142,17 +144,27 @@ const dayLabels: Record<string, string> = {
 }
 const days = Object.values(DayOfWeek).map(value => ({ value, label: dayLabels[value] }))
 
+const today = format(new Date(), 'yyyy-MM-dd')
+
+const futureSlots = computed(() =>
+  isEdit.value && props.trainingId
+    ? store.slots.filter(s => s.trainingId === props.trainingId && s.slotDate >= today)
+    : []
+)
+
 onMounted(async () => {
   clubs.loadClub(props.clubId)
-  if (isEdit.value) {
+  if (isEdit.value && props.trainingId) {
     await store.loadTrainings(props.clubId)
-    const training: TrainingBrief | undefined = store.trainings.find(t => t.id === props.trainingId)
+    const trainingId = props.trainingId
+    const training: TrainingBrief | undefined = store.trainings.find(t => t.id === trainingId)
     if (training) {
       dayOfWeek.value = training.dayOfWeek as DayOfWeek
       startTime.value = training.startTime.slice(0, 5)
       endTime.value = training.endTime.slice(0, 5)
       maxPlayers.value = training.maxPlayers
       features.value = training.features ?? ''
+      store.loadSlotsByTraining(props.clubId, trainingId)
     } else {
       router.push(`/clubs/${props.clubId}/trainings`)
     }
@@ -172,6 +184,13 @@ async function handleSubmit() {
   if (!isValid.value) return
   const trimmedFeatures = features.value.trim() || null
   if (isEdit.value && props.trainingId) {
+    const training = store.trainings.find(t => t.id === props.trainingId)
+    const dayChanged = training !== undefined && training.dayOfWeek !== dayOfWeek.value
+    if (dayChanged && futureSlots.value.length > 0) {
+      const count = futureSlots.value.length
+      const noun = pluralRu(count, 'тренировка', 'тренировки', 'тренировок')
+      if (!window.confirm(`Смена дня недели удалит все предстоящие ${noun} этой периодичности (${count} шт.), включая записи игроков. Продолжить?`)) return
+    }
     await store.update(props.clubId, props.trainingId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value, trimmedFeatures)
   } else {
     await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value, trimmedFeatures)
