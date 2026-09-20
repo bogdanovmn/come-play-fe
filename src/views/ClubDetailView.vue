@@ -139,6 +139,7 @@ async function handleDelete(trainingId: string) {
   column-gap: 0.5rem;
   font-size: 1.4rem;
   margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
 }
 
 .sport-badge {

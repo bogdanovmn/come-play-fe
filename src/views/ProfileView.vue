@@ -320,6 +320,7 @@ h1 {
 .club-card h3 {
   margin: 0 0 0.4rem;
   font-size: 1.05rem;
+  overflow-wrap: anywhere;
 }
 
 .sport-type {

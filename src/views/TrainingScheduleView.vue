@@ -5,14 +5,16 @@
       <h1>Запись на тренировки</h1>
     </div>
     <div v-if="club" class="heading-sub">
-      <span>Клуб {{ club.name }}</span>
-      <router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-      </router-link>
+      <span class="club-name">
+        <span class="club-label">Клуб</span>
+        «{{ club.name }}»<router-link :to="`/clubs/${club.id}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </router-link>
+      </span>
     </div>
 
     <div v-if="club && club.closed && !isOwner" class="closed-block">
@@ -34,12 +36,6 @@
               </div>
               <div class="slot-time">{{ formatTime(slot.startTime) }} – {{ formatTime(slot.endTime) }}</div>
               <span v-if="slot.overridden" class="adjusted-badge">Изменено</span>
-            </div>
-            <div class="slot-side">
-              <div class="slot-info">
-                <span class="enrolled">{{ slot.enrolledCount }}/{{ slot.maxPlayers }}</span>
-                <span v-if="slot.commentsCount > 0" class="comments">{{ slot.commentsCount }} {{ pluralRu(slot.commentsCount, 'комментарий', 'комментария', 'комментариев') }}</span>
-              </div>
               <div class="slot-actions">
                 <button v-if="isOwner" class="btn-icon" title="Изменить параметры" aria-label="Изменить параметры" @click.stop="openEdit(slot)">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -61,6 +57,12 @@
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
                 </button>
+              </div>
+            </div>
+            <div class="slot-side">
+              <div class="slot-info">
+                <span class="enrolled" :class="{ full: isSlotFull(slot) }">{{ slot.enrolledCount }}/{{ slot.maxPlayers }}</span>
+                <span v-if="slot.commentsCount > 0" class="comments">{{ slot.commentsCount }} {{ pluralRu(slot.commentsCount, 'комментарий', 'комментария', 'комментариев') }}</span>
               </div>
             </div>
           </div>
@@ -156,6 +158,10 @@ function formatTime(value: string): string {
   return value.length > 5 ? value.slice(0, 5) : value
 }
 
+function isSlotFull(slot: TrainingSlot): boolean {
+  return slot.enrolledCount >= slot.maxPlayers
+}
+
 function weekday(dateStr: string) {
   return format(new Date(dateStr), 'EEEE', { locale: ru })
 }
@@ -210,8 +216,8 @@ function toggleEditTimeField(field: 'start' | 'end') {
 
 function openEdit(slot: TrainingSlot) {
   editingSlot.value = slot
-  editStart.value = slot.startTime
-  editEnd.value = slot.endTime
+  editStart.value = slot.startTime.slice(0, 5)
+  editEnd.value = slot.endTime.slice(0, 5)
   editMax.value = slot.maxPlayers
   editFeatures.value = slot.features ?? ''
   editTimeField.value = null
@@ -261,10 +267,21 @@ h1 { font-size: 1.35rem; margin: 0; }
   margin: 0 0 1rem 48px;
 }
 
+.club-name {
+  display: inline;
+  overflow-wrap: anywhere;
+}
+
+.club-label {
+  opacity: 0.7;
+}
+
 .info-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  vertical-align: -0.2em;
+  margin-left: 0.3rem;
   color: var(--color-muted);
   transition: color 0.2s;
 }
@@ -314,7 +331,7 @@ h1 { font-size: 1.35rem; margin: 0; }
 .slot-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
@@ -368,6 +385,13 @@ h1 { font-size: 1.35rem; margin: 0; }
 .enrolled {
   color: var(--color-muted);
   font-weight: 600;
+  font-size: 2em;
+  line-height: 1.1;
+}
+
+.enrolled.full {
+  color: var(--color-danger);
+  font-weight: 700;
 }
 
 .comments {
@@ -378,6 +402,7 @@ h1 { font-size: 1.35rem; margin: 0; }
 .slot-actions {
   display: flex;
   gap: 0.4rem;
+  margin-top: 0.35rem;
 }
 
 .btn-icon {

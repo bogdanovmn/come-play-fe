@@ -26,6 +26,7 @@ function goBack() {
 <style scoped>
 .back-btn {
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 40px;

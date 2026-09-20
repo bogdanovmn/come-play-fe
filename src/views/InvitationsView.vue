@@ -5,14 +5,16 @@
       <h1>Приглашения</h1>
     </div>
     <div v-if="club" class="heading-sub">
-      <span>Клуб {{ club.name }}</span>
-      <router-link :to="`/clubs/${clubId}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-      </router-link>
+      <span class="club-name">
+        <span class="club-label">Клуб</span>
+        «{{ club.name }}»<router-link :to="`/clubs/${clubId}/info`" class="info-icon" title="Информация о клубе" aria-label="Информация о клубе">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </router-link>
+      </span>
     </div>
 
     <div v-if="invitationList.length === 0" class="empty">Пока нет приглашений.</div>
@@ -144,10 +146,21 @@ h1 {
   margin: 0 0 1rem 48px;
 }
 
+.club-name {
+  display: inline;
+  overflow-wrap: anywhere;
+}
+
+.club-label {
+  opacity: 0.7;
+}
+
 .info-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  vertical-align: -0.2em;
+  margin-left: 0.3rem;
   color: var(--color-muted);
   transition: color 0.2s;
 }

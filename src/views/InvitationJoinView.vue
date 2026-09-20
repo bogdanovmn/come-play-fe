@@ -78,6 +78,7 @@ function handleLogin() {
   font-weight: bold;
   color: var(--color-primary);
   margin-bottom: 1rem;
+  overflow-wrap: anywhere;
 }
 
 .text {
