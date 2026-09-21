@@ -34,7 +34,7 @@
           </svg>
           <span>{{ startTime }}</span>
         </button>
-        <TimeWheel v-if="openTimeField === 'start'" v-model="startTime" min="00:00" :max="startMax" @select="openTimeField = null" />
+        <TimeWheel v-if="openTimeField === 'start'" v-model="startTime" min="00:00" :max="maxStartTime" @select="openTimeField = null" />
       </div>
 
       <label>Конец</label>
@@ -90,7 +90,6 @@ const clubs = clubsStore()
 const isEdit = computed(() => props.trainingId !== undefined)
 
 const MIN_DURATION_MINUTES = 30
-const startMax = '23:00'
 
 function parseMinutes(value: string): number {
   const [h, m] = value.split(':').map(Number)
@@ -119,6 +118,11 @@ const club = computed(() => clubs.currentClub)
 
 const minEndTime = computed(() => formatMinutes(parseMinutes(startTime.value) + MIN_DURATION_MINUTES))
 
+const maxStartTime = computed(() => {
+  const maxByEnd = parseMinutes(endTime.value) - MIN_DURATION_MINUTES
+  return formatMinutes(Math.min(Math.max(maxByEnd, 0), 23 * 60))
+})
+
 const timeError = computed(() =>
   !endTime.value || !startTime.value || parseMinutes(endTime.value) <= parseMinutes(startTime.value)
 )
@@ -130,6 +134,12 @@ const isValid = computed(() =>
 watch(startTime, (value) => {
   if (!endTime.value || parseMinutes(endTime.value) <= parseMinutes(value)) {
     endTime.value = formatMinutes(parseMinutes(value) + MIN_DURATION_MINUTES)
+  }
+})
+
+watch(endTime, (value) => {
+  if (!startTime.value || parseMinutes(startTime.value) >= parseMinutes(value) - MIN_DURATION_MINUTES) {
+    startTime.value = formatMinutes(Math.min(Math.max(parseMinutes(value) - MIN_DURATION_MINUTES, 0), 23 * 60))
   }
 })
 
@@ -195,7 +205,7 @@ async function handleSubmit() {
   } else {
     await store.create(props.clubId, dayOfWeek.value, startTime.value, endTime.value, maxPlayers.value, trimmedFeatures)
   }
-  router.push(`/clubs/${props.clubId}/trainings`)
+  router.push({ path: `/clubs/${props.clubId}`, query: { tab: 'schedule' } })
 }
 </script>
 

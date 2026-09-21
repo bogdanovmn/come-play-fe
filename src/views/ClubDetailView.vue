@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { clubsStore } from '@/stores/clubs'
 import { trainingsStore } from '@/stores/trainings'
 import { profileStore } from '@/stores/profile'
@@ -80,6 +81,7 @@ import ClubMembers from '@/components/ClubMembers.vue'
 import { pluralRu } from '@/utils/plural'
 
 const props = defineProps<{ clubId: string }>()
+const route = useRoute()
 const clubs = clubsStore()
 const trainings = trainingsStore()
 const profile = profileStore()
@@ -114,7 +116,12 @@ onMounted(async () => {
     profile.loadProfile(),
     trainings.loadTrainings(props.clubId)
   ])
-  tab.value = isOwner.value ? 'schedule' : 'members'
+  const q = route.query.tab
+  if (q === 'schedule' || q === 'members') {
+    tab.value = q
+  } else {
+    tab.value = isOwner.value ? 'schedule' : 'members'
+  }
 })
 
 async function handleDelete(trainingId: string) {

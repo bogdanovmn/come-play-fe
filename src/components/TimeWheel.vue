@@ -1,8 +1,8 @@
 <template>
   <div class="time-wheel">
-    <NumberWheel v-model="h" :min="hourMin" :max="hourMax" :pad="2" class="time-wheel-col" @select="emit('select')" />
+    <NumberWheel v-model="h" :min="hourMin" :max="hourMax" :pad="2" class="time-wheel-col" @select="commit" />
     <span class="time-wheel-sep">:</span>
-    <NumberWheel v-model="m" :min="minuteMin(h)" :max="minuteMax(h)" :step="5" :pad="2" class="time-wheel-col" @select="emit('select')" />
+    <NumberWheel v-model="m" :min="minuteMin(h)" :max="minuteMax(h)" :step="5" :pad="2" class="time-wheel-col" @select="commit" />
   </div>
 </template>
 
@@ -74,6 +74,16 @@ watch([h, m], () => {
   const time = formatTime(nh * 60 + nm)
   if (time !== props.modelValue) emit('update:modelValue', time)
 })
+
+function commit() {
+  const nh = clampHour(h.value)
+  const nm = clampMinute(nh, m.value)
+  if (nh !== h.value) h.value = nh
+  if (nm !== m.value) m.value = nm
+  const time = formatTime(nh * 60 + nm)
+  if (time !== props.modelValue) emit('update:modelValue', time)
+  emit('select')
+}
 </script>
 
 <style scoped>
