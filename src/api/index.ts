@@ -83,6 +83,8 @@ export interface Enrollment {
   enrolledBy: string
   enrolledAt: string
   comingLater: boolean
+  skill: SkillLevel | null
+  owner: boolean
 }
 
 export interface Comment {
@@ -112,16 +114,20 @@ export interface FriendBrief {
 export interface ClubMember {
   id: string
   name: string
+  skill: SkillLevel | null
+  owner: boolean
+  overridden: boolean
 }
 
-export interface VisitByDay {
-  date: string
-  visitCount: number
+export interface PlayerSkill {
+  sportTypeId: number
+  sportTypeName: string
+  skill: SkillLevel
 }
 
-export interface VisitByPlayer {
-  userId: string
-  visitCount: number
+export interface SportSkillUpdate {
+  sportTypeId: number
+  skill: SkillLevel | null
 }
 
 export enum DayOfWeek {
@@ -132,6 +138,32 @@ export enum DayOfWeek {
   FRIDAY = 'FRIDAY',
   SATURDAY = 'SATURDAY',
   SUNDAY = 'SUNDAY',
+}
+
+export enum SkillLevel {
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  EXPERT = 'EXPERT',
+}
+
+export const SKILL_LABELS: Record<SkillLevel, string> = {
+  [SkillLevel.BEGINNER]: 'Начинающий',
+  [SkillLevel.INTERMEDIATE]: 'Продолжающий',
+  [SkillLevel.ADVANCED]: 'Продвинутый',
+  [SkillLevel.EXPERT]: 'Эксперт',
+}
+
+export const SKILL_LEVELS: SkillLevel[] = Object.values(SkillLevel)
+
+export interface VisitByDay {
+  date: string
+  visitCount: number
+}
+
+export interface VisitByPlayer {
+  userId: string
+  visitCount: number
 }
 
 // ===================== CLUB API =====================
@@ -166,6 +198,14 @@ export async function openClub(clubId: string): Promise<void> {
 
 export async function listClubMembers(clubId: string): Promise<ClubMember[]> {
   return authApi.get<ClubMember[]>(`/clubs/${clubId}/members`)
+}
+
+export async function setMemberSkill(clubId: string, memberId: string, skill: SkillLevel): Promise<void> {
+  return authApi.put(`/clubs/${clubId}/members/${memberId}/skill`, { skill })
+}
+
+export async function clearMemberSkill(clubId: string, memberId: string): Promise<void> {
+  return authApi.delete(`/clubs/${clubId}/members/${memberId}/skill`)
 }
 
 export async function leaveClub(clubId: string): Promise<void> {
@@ -291,26 +331,30 @@ export async function createComment(slotId: string, text: string): Promise<Comme
   return authApi.post<Comment>(`/slots/${slotId}/comments`, { text })
 }
 
-// ===================== USER API =====================
+// ===================== PROFILE API =====================
 
 export async function getProfile(): Promise<UserProfile> {
-  return authApi.get<UserProfile>('/users/me')
+  return authApi.get<UserProfile>('/profile')
 }
 
-export async function updateProfile(displayName: string): Promise<void> {
-  return authApi.put('/users/me', { displayName })
+export async function saveSettings(displayName: string, sportSkills: SportSkillUpdate[]): Promise<void> {
+  return authApi.put('/profile/settings', { displayName, sportSkills })
 }
 
 export async function listFriends(): Promise<FriendBrief[]> {
-  return authApi.get<FriendBrief[]>('/users/me/friends')
+  return authApi.get<FriendBrief[]>('/profile/friends')
 }
 
 export async function addFriend(name: string): Promise<void> {
-  return authApi.post('/users/me/friends', { name })
+  return authApi.post('/profile/friends', { name })
 }
 
 export async function removeFriend(friendId: string): Promise<void> {
-  return authApi.delete(`/users/me/friends/${friendId}`)
+  return authApi.delete(`/profile/friends/${friendId}`)
+}
+
+export async function listMySportSkills(): Promise<PlayerSkill[]> {
+  return authApi.get<PlayerSkill[]>('/profile/sport-skills')
 }
 
 // ===================== SPORT TYPE API =====================

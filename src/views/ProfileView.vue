@@ -12,12 +12,41 @@
     </div>
 
     <div v-if="activeTab === 'about'" class="tab-content">
-      <div class="section">
-        <h2>Отображаемое имя</h2>
-        <div class="edit-name">
-          <input v-model="displayName" placeholder="Ваше имя" />
-          <button @click="handleSaveName" :disabled="!displayName.trim()">Сохранить</button>
+      <div class="info-card">
+        <div class="setting-head">
+          <h2>Отображаемое имя</h2>
+          <span class="hint-area">
+            <button class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('name')">?</button>
+            <div v-if="hintOpen === 'name'" class="hint-popup">Имя, которое увидят другие игроки в списках участников клуба и в записи на тренировку.</div>
+          </span>
         </div>
+        <input v-model="displayName" class="setting-input" placeholder="Ваше имя" maxlength="50" />
+      </div>
+
+      <div class="info-card">
+        <div class="setting-head">
+          <h2>Уровень игры</h2>
+          <span class="hint-area">
+            <button class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('skill')">?</button>
+            <div v-if="hintOpen === 'skill'" class="hint-popup">Укажите свой уровень для каждого вида спорта. Бейдж с вашим уровнем показывается рядом с именем в списке участников клуба и в записи на тренировку — у клубов и тренировок того же вида спорта.</div>
+          </span>
+        </div>
+        <div v-if="sportTypes.isLoading" class="loading">Загрузка...</div>
+        <div v-else class="skill-list">
+          <div v-for="s in sportTypeOptions" :key="s.id" class="skill-row">
+            <span class="skill-name">{{ s.name }}</span>
+            <select class="skill-select" :value="skillEditFor(s.id)" @change="onSkillEdit(s.id, ($event.target as HTMLSelectElement).value as string)">
+              <option value="">Не указан</option>
+              <option v-for="lv in SKILL_LEVELS" :key="lv" :value="lv">{{ SKILL_LABELS[lv] }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-block">
+        <button class="save-btn" @click="handleSave" :disabled="!hasChanges || saving">
+          {{ saving ? 'Сохранение...' : 'Сохранить' }}
+        </button>
       </div>
     </div>
 
@@ -77,11 +106,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { profileStore } from '@/stores/profile'
 import { clubsStore } from '@/stores/clubs'
 import { sportTypesStore } from '@/stores/sportTypes'
+import { SKILL_LABELS, SKILL_LEVELS, type SkillLevel } from '@/api'
 import BackButton from '@/components/BackButton.vue'
 import { pluralRu } from '@/utils/plural'
 
@@ -91,6 +121,9 @@ const clubs = clubsStore()
 const sportTypes = sportTypesStore()
 const activeTab = ref<'about' | 'friends' | 'clubs'>('about')
 const displayName = ref('')
+const skillEdits = ref<Record<number, SkillLevel | ''>>({})
+const hintOpen = ref<'name' | 'skill' | null>(null)
+const saving = ref(false)
 const newFriendName = ref('')
 const showCreateClub = ref(false)
 const newClubName = ref('')
@@ -102,20 +135,68 @@ onMounted(async () => {
   await Promise.all([
     profile.loadProfile(),
     profile.loadFriends(),
+    profile.loadSkills(),
     clubs.loadOwned(),
     sportTypes.load()
   ])
   if (profile.profile) {
     displayName.value = profile.profile.displayName
   }
+  for (const s of profile.skills) {
+    skillEdits.value[s.sportTypeId] = s.skill
+  }
   if (sportTypes.sportTypes.length > 0) {
     newClubSportTypeId.value = sportTypes.sportTypes[0].id
   }
+  document.addEventListener('click', onDocumentClick)
 })
 
-async function handleSaveName() {
-  if (!displayName.value.trim()) return
-  await profile.updateProfile(displayName.value.trim())
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick)
+})
+
+function onDocumentClick() {
+  hintOpen.value = null
+}
+
+function toggleHint(which: 'name' | 'skill') {
+  hintOpen.value = hintOpen.value === which ? null : which
+}
+
+function skillValueFor(sportTypeId: number): SkillLevel | null {
+  return profile.skills.find(s => s.sportTypeId === sportTypeId)?.skill ?? null
+}
+
+function skillEditFor(sportTypeId: number): SkillLevel | '' {
+  return skillEdits.value[sportTypeId] ?? ''
+}
+
+function onSkillEdit(sportTypeId: number, value: string) {
+  skillEdits.value[sportTypeId] = value === '' ? '' : (value as SkillLevel)
+}
+
+const hasChanges = computed(() => {
+  const savedName = profile.profile?.displayName ?? ''
+  if (displayName.value.trim() !== savedName.trim()) return true
+  return sportTypes.sportTypes.some(s => {
+    const edited = skillEdits.value[s.id] ?? ''
+    const saved = skillValueFor(s.id) ?? ''
+    return edited !== saved
+  })
+})
+
+async function handleSave() {
+  if (saving.value) return
+  saving.value = true
+  try {
+    const sportSkills = sportTypes.sportTypes.map(s => ({
+      sportTypeId: s.id,
+      skill: (skillEdits.value[s.id] ?? '') === '' ? null : (skillEdits.value[s.id] as SkillLevel)
+    }))
+    await profile.saveSettings(displayName.value.trim(), sportSkills)
+  } finally {
+    saving.value = false
+  }
 }
 
 async function handleAddFriend() {
@@ -188,34 +269,109 @@ h1 {
   margin-bottom: 0.75rem;
 }
 
-.edit-name {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.info-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
 }
 
-.edit-name input {
+.setting-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.setting-head h2 {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.hint-area {
+  position: relative;
+  display: inline-flex;
+}
+
+.hint-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.hint-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.hint-popup {
+  position: absolute;
+  top: 1.7rem;
+  right: 0;
+  z-index: 10;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  width: min(260px, calc(100vw - 2rem));
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(58, 47, 34, 0.18);
+}
+
+.setting-input {
+  width: 100%;
   padding: 0.6rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  flex: 1;
-  min-width: 200px;
+  background: var(--color-surface);
+  color: var(--color-text);
   min-height: 44px;
 }
 
-.edit-name button {
-  padding: 0.55rem 1.2rem;
+.save-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 0.65rem 1.2rem;
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  min-height: 44px;
   font-size: 1rem;
+  min-height: 48px;
 }
 
-.edit-name button:hover {
+.save-btn:hover:not(:disabled) {
   background: var(--color-primary-hover);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .add-friend {
@@ -251,6 +407,41 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--color-row-border);
+  flex-wrap: wrap;
+}
+
+.skill-row:last-of-type {
+  border-bottom: none;
+}
+
+.skill-name {
+  flex: 1;
+  min-width: 120px;
+  word-break: break-word;
+}
+
+.skill-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  min-height: 40px;
 }
 
 .friend-item {
