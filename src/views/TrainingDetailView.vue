@@ -40,9 +40,23 @@
         <h2>Записаны ({{ enrollments.enrollments.length }})</h2>
         <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
-          <div v-for="e in enrollments.enrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+          <div v-for="e in sortedEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
             <span class="enrollment-name" :class="{ 'enrollment-name--owner': e.owner }">
                 <SkillStar :skill="e.skill" />
+                <svg
+                  v-if="e.friendId"
+                  class="friend-plus"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
                 {{ e.name }}
               </span>
             <span class="enrollment-side">
@@ -171,6 +185,45 @@ const availableFriends = computed(() =>
   profile.friends.filter(f => !isFriendEnrolled(f.id))
 )
 
+const isFriendEnrollment = (e: Enrollment): boolean => e.friendId != null
+
+const sortedEnrollments = computed<Enrollment[]>(() => {
+  const byName = (a: Enrollment, b: Enrollment) => a.name.localeCompare(b.name, 'ru')
+
+  const enrolledAnchorIds = new Set(
+    enrollments.enrollments
+      .filter(e => !isFriendEnrollment(e))
+      .map(e => e.enrolledBy)
+  )
+
+  const friendsByAnchor = new Map<string, Enrollment[]>()
+  const leaders: Enrollment[] = []
+
+  for (const e of enrollments.enrollments) {
+    if (!isFriendEnrollment(e)) {
+      leaders.push(e)
+    } else if (enrolledAnchorIds.has(e.enrolledBy)) {
+      const group = friendsByAnchor.get(e.enrolledBy) ?? []
+      group.push(e)
+      friendsByAnchor.set(e.enrolledBy, group)
+    } else {
+      leaders.push(e)
+    }
+  }
+
+  for (const group of friendsByAnchor.values()) {
+    group.sort(byName)
+  }
+  leaders.sort(byName)
+
+  const result: Enrollment[] = []
+  for (const leader of leaders) {
+    result.push(leader)
+    result.push(...(friendsByAnchor.get(leader.enrolledBy) ?? []))
+  }
+  return result
+})
+
 function canCancel(e: Enrollment): boolean {
   return profile.profile !== null && e.enrolledBy === profile.profile.id
 }
@@ -276,6 +329,14 @@ h1 {
 .enrollment-name--owner {
   font-weight: 700;
   color: var(--color-muted);
+}
+
+.friend-plus {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--color-muted);
+  opacity: 0.45;
 }
 
 .coming-toggle {
