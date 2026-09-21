@@ -4,15 +4,10 @@
     <div v-else-if="clubs.members.length === 0" class="empty">В клубе пока нет участников.</div>
     <div v-else class="member-list">
       <div v-for="m in clubs.members" :key="m.id" class="member-row">
-        <span class="member-main">
-          <span class="member-name">
-            <svg v-if="m.owner" class="crown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-label="Владелец клуба" title="Владелец клуба">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+        <span class="member-name" :class="{ 'member-name--owner': m.owner }">
+            <SkillStar :skill="m.skill" />
             {{ m.name }}
           </span>
-          <SkillBadge :skill="m.skill" />
-        </span>
         <select
           v-if="isOwner"
           class="member-skill-select"
@@ -32,7 +27,7 @@ import { computed, onMounted } from 'vue'
 import { clubsStore } from '@/stores/clubs'
 import { profileStore } from '@/stores/profile'
 import { SKILL_LABELS, SKILL_LEVELS, clearMemberSkill, setMemberSkill, type SkillLevel } from '@/api'
-import SkillBadge from '@/components/SkillBadge.vue'
+import SkillStar from '@/components/SkillStar.vue'
 
 const props = defineProps<{ clubId: string }>()
 const clubs = clubsStore()
@@ -81,14 +76,6 @@ async function handleSkillChange(memberId: string, value: string) {
   border-bottom: none;
 }
 
-.member-main {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
 .member-name {
   display: inline-flex;
   align-items: center;
@@ -96,11 +83,9 @@ async function handleSkillChange(memberId: string, value: string) {
   font-weight: 500;
 }
 
-.crown {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: var(--color-primary);
+.member-name--owner {
+  font-weight: 700;
+  color: var(--color-muted);
 }
 
 .member-skill-select {

@@ -41,15 +41,10 @@
         <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
           <div v-for="e in enrollments.enrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
-            <span class="enrollment-main">
-              <span class="enrollment-name">
-                <svg v-if="e.owner" class="crown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-label="Владелец клуба" title="Владелец клуба">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
+            <span class="enrollment-name" :class="{ 'enrollment-name--owner': e.owner }">
+                <SkillStar :skill="e.skill" />
                 {{ e.name }}
               </span>
-              <SkillBadge :skill="e.skill" />
-            </span>
             <span class="enrollment-side">
               <button
                 v-if="e.userId === profile.profile?.id"
@@ -122,7 +117,7 @@ import { profileStore } from '@/stores/profile'
 import { trainingsStore } from '@/stores/trainings'
 import type { Enrollment } from '@/api'
 import BackButton from '@/components/BackButton.vue'
-import SkillBadge from '@/components/SkillBadge.vue'
+import SkillStar from '@/components/SkillStar.vue'
 
 const props = defineProps<{ slotId: string }>()
 const enrollments = enrollmentsStore()
@@ -264,14 +259,6 @@ h1 {
   font-weight: bold;
 }
 
-.enrollment-main {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
 .enrollment-name {
   display: inline-flex;
   align-items: center;
@@ -286,11 +273,9 @@ h1 {
   flex-shrink: 0;
 }
 
-.crown {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  color: var(--color-primary);
+.enrollment-name--owner {
+  font-weight: 700;
+  color: var(--color-muted);
 }
 
 .coming-toggle {
