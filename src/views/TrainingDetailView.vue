@@ -4,10 +4,10 @@
   </div>
   <div class="training-detail" v-else>
     <div class="heading-row">
-      <BackButton fallback="/trainings" />
-      <h1>Тренировка</h1>
+      <BackButton :fallback="backFallback" />
+      <h1>{{ isPast ? 'Прошедшая тренировка' : 'Тренировка' }}</h1>
       <div class="actions">
-        <button v-if="!isEnrolled" class="btn-primary" @click="handleEnroll">Записаться</button>
+        <button v-if="canEnroll" class="btn-primary" @click="handleEnroll">Записаться</button>
       </div>
     </div>
 
@@ -31,13 +31,12 @@
     </div>
 
     <div class="tab-bar">
-      <button :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись</button>
-      <button :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии ({{ enrollments.comments.length }})</button>
+      <button v-if="!isCancelled" :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись ({{ enrollments.enrollments.length }})</button>
+      <button v-if="isCancelled || !isPast || enrollments.comments.length > 0" :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии ({{ enrollments.comments.length }})</button>
     </div>
 
-    <div v-if="tab === 'signup'" class="tab-content">
+    <div v-if="tab === 'signup' && !isCancelled" class="tab-content">
       <div class="section">
-        <h2>Записаны ({{ enrollments.enrollments.length }})</h2>
         <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
           <div v-for="e in sortedEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
@@ -61,14 +60,14 @@
               </span>
             <span class="enrollment-side">
               <button
-                v-if="e.userId === profile.profile?.id"
+                v-if="e.userId === profile.profile?.id && !isPast"
                 class="coming-toggle"
                 :class="{ active: e.comingLater }"
                 :disabled="comingLaterLoading"
                 @click="handleToggleComingLater"
               >Приду позднее</button>
               <span v-else-if="e.comingLater" class="coming-badge">придёт позже</span>
-              <button v-if="canCancel(e)" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
+              <button v-if="canCancel(e) && !isPast" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -79,7 +78,7 @@
         </div>
       </div>
 
-      <div v-if="availableFriends.length > 0" class="section">
+      <div v-if="!isPast && availableFriends.length > 0" class="section">
         <h2>Добавить друга</h2>
         <div class="friend-list">
           <div v-for="f in availableFriends" :key="f.id" class="friend-item">
@@ -95,9 +94,8 @@
       </div>
     </div>
 
-    <div v-else class="tab-content">
+    <div v-if="tab === 'comments'" class="tab-content">
       <div class="section">
-        <h2>Комментарии</h2>
         <div class="comment-list">
           <div v-for="c in enrollments.comments" :key="c.id" class="comment-item">
             <div class="comment-head">
@@ -108,7 +106,7 @@
           </div>
           <div v-if="enrollments.comments.length === 0" class="empty">Пока нет комментариев.</div>
         </div>
-        <div class="comment-input">
+        <div v-if="!isPast" class="comment-input">
           <input v-model="newComment" placeholder="Написать комментарий..." @keyup.enter="handleComment" />
           <button class="btn-send" title="Отправить" aria-label="Отправить" @click="handleComment" :disabled="!newComment.trim()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -123,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { enrollmentsStore } from '@/stores/enrollments'
@@ -132,6 +130,7 @@ import { trainingsStore } from '@/stores/trainings'
 import type { Enrollment } from '@/api'
 import BackButton from '@/components/BackButton.vue'
 import SkillStar from '@/components/SkillStar.vue'
+import { isSlotEnded } from '@/utils/slotTime'
 
 const props = defineProps<{ slotId: string }>()
 const enrollments = enrollmentsStore()
@@ -159,6 +158,30 @@ function formatCommentDate(value: string) {
 const isEnrolled = computed(() =>
   profile.profile !== null && enrollments.enrollments.some(e => e.userId === profile.profile!.id)
 )
+
+const isPast = computed(() => trainings.slot !== null && isSlotEnded(trainings.slot))
+
+const isCancelled = computed(() => trainings.slot?.cancelled ?? false)
+
+const canEnroll = computed(() => !isEnrolled.value && !isPast.value && !isCancelled.value)
+
+const backFallback = computed(() => {
+  const slot = trainings.slot
+  if (slot && isPast.value) return `/clubs/${slot.clubId}/trainings/history`
+  return '/trainings'
+})
+
+watch(isCancelled, (value) => {
+  if (value && tab.value === 'signup') {
+    tab.value = 'comments'
+  }
+})
+
+watch(() => enrollments.comments.length, (count) => {
+  if (isPast.value && count === 0 && !isCancelled.value && tab.value === 'comments') {
+    tab.value = 'signup'
+  }
+})
 
 const myComingLater = computed(() => {
   if (profile.profile === null) return false

@@ -27,37 +27,20 @@
       <div v-else-if="visibleSlots.length === 0" class="empty">В ближайшее время тренировок нет.</div>
 
       <div v-else class="slot-list">
-        <div v-for="slot in visibleSlots" :key="slot.id" class="slot-card" :class="{ overridden: slot.overridden }">
+        <div v-for="slot in visibleSlots" :key="slot.id" class="slot-card" :class="{ overridden: slot.overridden, cancelled: slot.cancelled }">
           <div class="slot-row" @click="router.push(`/slots/${slot.id}`)">
             <div class="slot-main">
               <div class="slot-date">
+                <svg v-if="slot.enrolled" class="enrolled-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
                 <span class="slot-day">{{ weekday(slot.slotDate) }}, </span>
                 <span class="slot-date-muted">{{ monthDay(slot.slotDate) }}</span>
               </div>
               <div class="slot-time">{{ formatTime(slot.startTime) }} – {{ formatTime(slot.endTime) }}</div>
               <span v-if="slot.overridden" class="adjusted-badge">Изменено</span>
-              <div class="slot-actions">
-                <button v-if="isOwner" class="btn-icon" title="Изменить параметры" aria-label="Изменить параметры" @click.stop="openEdit(slot)">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
-                <button
-                  v-if="slot.features"
-                  class="btn-icon features-btn"
-                  title="Особенности"
-                  aria-label="Особенности"
-                  :class="{ active: featuresOpenId === slot.id }"
-                  @click.stop="toggleFeatures(slot.id)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                </button>
-              </div>
+              <span v-if="slot.cancelled" class="cancelled-badge">Отменена</span>
             </div>
             <div class="slot-side">
               <div class="slot-info">
@@ -66,8 +49,50 @@
               </div>
             </div>
           </div>
+          <div class="slot-actions">
+            <div class="slot-actions-left">
+              <button
+                v-if="slot.features"
+                class="btn-icon features-btn"
+                title="Особенности"
+                aria-label="Особенности"
+                :class="{ active: featuresOpenId === slot.id }"
+                @click.stop="toggleFeatures(slot.id)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </button>
+            </div>
+            <div class="slot-action-buttons">
+              <button v-if="isOwner && !slot.cancelled" class="btn-icon btn-icon-danger" title="Отменить тренировку" aria-label="Отменить тренировку" @click.stop="handleCancel(slot)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+              <button v-if="isOwner && slot.cancelled" class="btn-icon btn-icon-restore" title="Вернуть тренировку в расписание" aria-label="Вернуть тренировку в расписание" @click.stop="handleRestore(slot)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+              </button>
+              <button v-if="isOwner" class="btn-icon" title="Изменить параметры" aria-label="Изменить параметры" @click.stop="openEdit(slot)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            </div>
+          </div>
           <div v-if="featuresOpenId === slot.id && slot.features" class="slot-features">{{ slot.features }}</div>
         </div>
+      </div>
+
+      <div v-if="!store.isLoading && store.slots.length > 0" class="history-footer">
+        <router-link :to="`/clubs/${clubId}/trainings/history`" class="history-link">История</router-link>
       </div>
     </template>
 
@@ -127,6 +152,7 @@ import BackButton from '@/components/BackButton.vue'
 import NumberWheel from '@/components/NumberWheel.vue'
 import TimeWheel from '@/components/TimeWheel.vue'
 import { pluralRu } from '@/utils/plural'
+import { isSlotEnded } from '@/utils/slotTime'
 
 const props = defineProps<{ clubId: string }>()
 const router = useRouter()
@@ -149,9 +175,10 @@ const canViewSchedule = computed(() =>
 )
 
 const visibleSlots = computed(() => {
-  const datesWithSlots = [...new Set(store.slots.map(s => s.slotDate).filter(Boolean))].sort()
+  const upcoming = store.slots.filter(s => !isSlotEnded(s))
+  const datesWithSlots = [...new Set(upcoming.map(s => s.slotDate).filter(Boolean))].sort()
   const windowDates = new Set(datesWithSlots.slice(0, 3))
-  return store.slots.filter(s => s.slotDate !== undefined && windowDates.has(s.slotDate))
+  return upcoming.filter(s => s.slotDate !== undefined && windowDates.has(s.slotDate))
 })
 
 function formatTime(value: string): string {
@@ -236,6 +263,16 @@ async function handleResetSlot() {
   editingSlot.value = null
 }
 
+async function handleCancel(slot: TrainingSlot) {
+  if (!window.confirm('Отменить тренировку?')) return
+  await store.cancelSlot(slot.id)
+}
+
+async function handleRestore(slot: TrainingSlot) {
+  if (!window.confirm('Вернуть тренировку в расписание?')) return
+  await store.restoreSlot(slot.id)
+}
+
 onMounted(async () => {
   await Promise.all([
     clubs.loadClub(props.clubId),
@@ -257,6 +294,28 @@ onMounted(async () => {
 }
 
 h1 { font-size: 1.35rem; margin: 0; }
+
+.history-footer {
+  margin-top: 0.75rem;
+}
+
+.history-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.history-link:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
 
 .heading-sub {
   display: flex;
@@ -328,6 +387,13 @@ h1 { font-size: 1.35rem; margin: 0; }
   background: var(--color-primary-soft);
 }
 
+.slot-card.cancelled {
+  border-style: dashed;
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+  opacity: 0.55;
+}
+
 .slot-row {
   display: flex;
   justify-content: space-between;
@@ -344,6 +410,20 @@ h1 { font-size: 1.35rem; margin: 0; }
 
 .slot-day {
   font-weight: bold;
+}
+
+.enrolled-check {
+  width: 20px;
+  height: 20px;
+  color: var(--color-gold);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.slot-date {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
 }
 
 .slot-date-muted {
@@ -363,6 +443,18 @@ h1 { font-size: 1.35rem; margin: 0; }
   font-weight: 500;
   color: var(--color-primary);
   border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
+}
+
+.cancelled-badge {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
   border-radius: 4px;
   padding: 0.05rem 0.5rem;
   white-space: nowrap;
@@ -401,8 +493,22 @@ h1 { font-size: 1.35rem; margin: 0; }
 
 .slot-actions {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.slot-actions-left {
+  display: flex;
+  align-items: center;
   gap: 0.4rem;
-  margin-top: 0.35rem;
+}
+
+.slot-action-buttons {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
 }
 
 .btn-icon {
@@ -432,9 +538,29 @@ h1 { font-size: 1.35rem; margin: 0; }
   height: 18px;
 }
 
-.features-btn.active {
+.btn-icon.features-btn.active {
   background: var(--color-primary);
   color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-icon.btn-icon-danger {
+  color: var(--color-danger);
+}
+
+.btn-icon.btn-icon-danger:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn-icon.btn-icon-restore {
+  color: var(--color-primary);
+}
+
+.btn-icon.btn-icon-restore:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
   border-color: var(--color-primary);
 }
 

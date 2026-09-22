@@ -13,6 +13,9 @@
   --color-nav-link: #c6b99b;
   --color-danger: #6b4630;
   --color-danger-soft: #e8d6bd;
+  --color-success: #6a7f3f;
+  --color-success-soft: #e2e8c8;
+  --color-gold: #c9a227;
   --color-row-border: #e7dcc2;
   --color-overlay: rgba(58, 47, 34, 0.55);
 }

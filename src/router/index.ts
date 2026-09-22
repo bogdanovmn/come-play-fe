@@ -25,6 +25,7 @@ const router = createRouter({
     { path: '/clubs/:clubId/invitations/:invitationId/joiners', component: () => import('@/views/InvitationJoinersView.vue'), meta: { private: true }, props: true },
     { path: '/invitations/:invitationId', component: () => import('@/views/InvitationJoinView.vue'), props: true },
     { path: '/clubs/:clubId/trainings', component: () => import('@/views/TrainingScheduleView.vue'), meta: { private: true }, props: true },
+    { path: '/clubs/:clubId/trainings/history', component: () => import('@/views/TrainingHistoryView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/trainings/new', component: () => import('@/views/TrainingFormView.vue'), meta: { private: true }, props: true },
     { path: '/clubs/:clubId/trainings/:trainingId/edit', component: () => import('@/views/TrainingFormView.vue'), meta: { private: true }, props: true },
     { path: '/slots/:slotId', component: () => import('@/views/TrainingDetailView.vue'), meta: { private: true }, props: true },

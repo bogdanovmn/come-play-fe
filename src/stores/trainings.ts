@@ -6,6 +6,7 @@ import type { TrainingBrief, TrainingSlot } from '@/api'
 export const trainingsStore = defineStore('trainingsStore', () => {
   const trainings = ref<TrainingBrief[]>([])
   const slots = ref<TrainingSlot[]>([])
+  const historySlots = ref<TrainingSlot[]>([])
   const slot = ref<TrainingSlot | null>(null)
   const isLoading = ref(false)
 
@@ -31,6 +32,15 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     isLoading.value = true
     try {
       slots.value = await api.listSlots(clubId, from, to)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function loadHistorySlots(clubId: string, days: number): Promise<void> {
+    isLoading.value = true
+    try {
+      historySlots.value = await api.listHistorySlots(clubId, days)
     } finally {
       isLoading.value = false
     }
@@ -101,5 +111,17 @@ export const trainingsStore = defineStore('trainingsStore', () => {
     return updated
   }
 
-  return { trainings, slots, slot, isLoading, loadTrainings, loadSlots, loadSlotsByTraining, loadSlot, create, remove, update, updateSlotParams, clearSlotParams }
+  async function cancelSlot(slotId: string): Promise<TrainingSlot> {
+    const updated = await api.cancelSlot(slotId)
+    replaceSlot(updated)
+    return updated
+  }
+
+  async function restoreSlot(slotId: string): Promise<TrainingSlot> {
+    const updated = await api.restoreSlot(slotId)
+    replaceSlot(updated)
+    return updated
+  }
+
+  return { trainings, slots, historySlots, slot, isLoading, loadTrainings, loadSlots, loadHistorySlots, loadSlotsByTraining, loadSlot, create, remove, update, updateSlotParams, clearSlotParams, cancelSlot, restoreSlot }
 })

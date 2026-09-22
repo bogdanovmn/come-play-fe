@@ -73,6 +73,8 @@ export interface TrainingSlot {
   commentsCount: number
   features: string | null
   overridden: boolean
+  cancelled: boolean
+  enrolled: boolean
 }
 
 export interface Enrollment {
@@ -301,6 +303,18 @@ export async function updateSlotParams(
 
 export async function clearSlotParams(slotId: string): Promise<TrainingSlot> {
   return authApi.delete<TrainingSlot>(`/slots/${slotId}/params`)
+}
+
+export async function cancelSlot(slotId: string): Promise<TrainingSlot> {
+  return authApi.put<TrainingSlot>(`/slots/${slotId}/cancel`)
+}
+
+export async function restoreSlot(slotId: string): Promise<TrainingSlot> {
+  return authApi.delete<TrainingSlot>(`/slots/${slotId}/cancel`)
+}
+
+export async function listHistorySlots(clubId: string, days: number): Promise<TrainingSlot[]> {
+  return authApi.get<TrainingSlot[]>(`/clubs/${clubId}/history`, { days })
 }
 
 // ===================== ENROLLMENT API =====================
