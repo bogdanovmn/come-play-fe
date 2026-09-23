@@ -7,7 +7,7 @@
       <BackButton :fallback="backFallback" />
       <h1>{{ isPast ? 'Прошедшая тренировка' : 'Тренировка' }}</h1>
       <div class="actions">
-        <button v-if="canEnroll" class="btn-primary" @click="handleEnroll">Записаться</button>
+        <button v-if="canEnroll" class="btn-primary" @click="handleEnroll">{{ isFull ? 'Записаться в резерв' : 'Записаться' }}</button>
       </div>
     </div>
 
@@ -31,15 +31,15 @@
     </div>
 
     <div class="tab-bar">
-      <button v-if="!isCancelled" :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись ({{ enrollments.enrollments.length }})</button>
+      <button v-if="!isCancelled" :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись ({{ mainEnrollments.length }})</button>
       <button v-if="isCancelled || !isPast || enrollments.comments.length > 0" :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии ({{ enrollments.comments.length }})</button>
     </div>
 
     <div v-if="tab === 'signup' && !isCancelled" class="tab-content">
       <div class="section">
-        <div v-if="enrollments.enrollments.length === 0" class="empty">Пока никто не записан.</div>
+        <div v-if="mainEnrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
-          <div v-for="e in sortedEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+          <div v-for="e in mainEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
             <span class="enrollment-name" :class="{ 'enrollment-name--owner': e.owner }">
                 <SkillStar :skill="e.skill" />
                 <svg
@@ -68,6 +68,41 @@
               >Приду позднее</button>
               <span v-else-if="e.comingLater" class="coming-badge">придёт позже</span>
               <button v-if="canCancel(e) && !isPast" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="waitlistEnrollments.length > 0" class="section">
+        <h2>Резерв ({{ waitlistEnrollments.length }})</h2>
+        <div class="enrollment-list">
+          <div v-for="(e, i) in waitlistEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+            <span class="enrollment-name">
+              <span class="waitlist-position">{{ i + 1 }}</span>
+              <SkillStar :skill="e.skill" />
+              <svg
+                v-if="e.friendId"
+                class="friend-plus"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              {{ e.name }}
+            </span>
+            <span class="enrollment-side">
+              <button v-if="canCancel(e) && !isPast" class="btn-cancel" title="Убрать из резерва" aria-label="Убрать из резерва" @click="handleCancel(e)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -164,6 +199,13 @@ const isPast = computed(() => trainings.slot !== null && isSlotEnded(trainings.s
 const isCancelled = computed(() => trainings.slot?.cancelled ?? false)
 
 const canEnroll = computed(() => !isEnrolled.value && !isPast.value && !isCancelled.value)
+
+const isFull = computed(() =>
+  trainings.slot !== null && trainings.slot.enrolledCount >= trainings.slot.maxPlayers
+)
+
+const mainEnrollments = computed(() => sortedEnrollments.value.filter(e => !e.waitlist))
+const waitlistEnrollments = computed(() => sortedEnrollments.value.filter(e => e.waitlist))
 
 const backFallback = computed(() => {
   const slot = trainings.slot
@@ -352,6 +394,19 @@ h1 {
 .enrollment-name--owner {
   font-weight: 700;
   color: var(--color-muted);
+}
+
+.waitlist-position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-product-soft, var(--color-primary-soft));
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .friend-plus {

@@ -69,6 +69,7 @@ export interface TrainingSlot {
   startTime: string
   endTime: string
   enrolledCount: number
+  waitlistCount: number
   maxPlayers: number
   commentsCount: number
   features: string | null
@@ -87,6 +88,7 @@ export interface Enrollment {
   comingLater: boolean
   skill: SkillLevel | null
   owner: boolean
+  waitlist: boolean
 }
 
 export interface Comment {

@@ -45,6 +45,7 @@
             <div class="slot-side">
               <div class="slot-info">
                 <span class="enrolled" :class="{ full: isSlotFull(slot) }">{{ slot.enrolledCount }}/{{ slot.maxPlayers }}</span>
+                <span v-if="slot.waitlistCount > 0" class="waitlist">+{{ slot.waitlistCount }} {{ pluralRu(slot.waitlistCount, 'резерв', 'резерва', 'резервов') }}</span>
                 <span v-if="slot.commentsCount > 0" class="comments">{{ slot.commentsCount }} {{ pluralRu(slot.commentsCount, 'комментарий', 'комментария', 'комментариев') }}</span>
               </div>
             </div>
@@ -489,6 +490,12 @@ h1 { font-size: 1.35rem; margin: 0; }
 .comments {
   color: var(--color-muted);
   font-size: 0.85rem;
+}
+
+.waitlist {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .slot-actions {
