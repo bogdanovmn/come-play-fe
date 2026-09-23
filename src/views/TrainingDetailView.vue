@@ -85,8 +85,9 @@
       <div v-if="waitlistEnrollments.length > 0" class="section">
         <h2>Резерв ({{ waitlistEnrollments.length }})</h2>
         <div class="enrollment-list">
-          <div v-for="e in waitlistEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+          <div v-for="(e, i) in waitlistEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
             <span class="enrollment-name">
+              <span class="waitlist-position">{{ i + 1 }}</span>
               <SkillStar :skill="e.skill" />
               <svg
                 v-if="e.friendId"
@@ -208,7 +209,11 @@ const isFull = computed(() =>
 )
 
 const mainEnrollments = computed(() => sortedEnrollments.value.filter(e => !e.waitlist))
-const waitlistEnrollments = computed(() => sortedEnrollments.value.filter(e => e.waitlist))
+const waitlistEnrollments = computed(() =>
+  enrollments.enrollments
+    .filter(e => e.waitlist)
+    .sort((a, b) => a.enrolledAt.localeCompare(b.enrolledAt))
+)
 
 const backFallback = computed(() => {
   const slot = trainings.slot
@@ -393,6 +398,21 @@ h1 {
 .enrollment-name--owner {
   font-weight: 700;
   color: var(--color-muted);
+}
+
+.waitlist-position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.6;
 }
 
 .friend-plus {
