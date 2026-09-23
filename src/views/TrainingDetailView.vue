@@ -6,9 +6,6 @@
     <div class="heading-row">
       <BackButton :fallback="backFallback" />
       <h1>{{ isPast ? 'Прошедшая тренировка' : 'Тренировка' }}</h1>
-      <div class="actions">
-        <button v-if="canEnroll" class="btn-primary" @click="handleEnroll">{{ isFull ? 'Записаться в резерв' : 'Записаться' }}</button>
-      </div>
     </div>
 
     <div v-if="trainings.slot" class="heading-sub">
@@ -31,16 +28,20 @@
     </div>
 
     <div class="tab-bar">
-      <button v-if="!isCancelled" :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись ({{ mainEnrollments.length }})</button>
-      <button v-if="isCancelled || !isPast || enrollments.comments.length > 0" :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии ({{ enrollments.comments.length }})</button>
+      <button v-if="!isCancelled" :class="{ active: tab === 'signup' }" @click="tab = 'signup'">Запись<span class="tab-count"> ({{ mainEnrollments.length }})</span></button>
+      <button v-if="isCancelled || !isPast || enrollments.comments.length > 0" :class="{ active: tab === 'comments' }" @click="tab = 'comments'">Комментарии<span v-if="enrollments.comments.length > 0" class="tab-count"> ({{ enrollments.comments.length }})</span></button>
     </div>
 
     <div v-if="tab === 'signup' && !isCancelled" class="tab-content">
+      <div v-if="canEnroll" class="section">
+        <button class="btn-primary" @click="handleEnroll">{{ isFull ? 'Записаться в резерв' : 'Записаться' }}</button>
+      </div>
       <div class="section">
         <div v-if="mainEnrollments.length === 0" class="empty">Пока никто не записан.</div>
         <div v-else class="enrollment-list">
           <div v-for="e in mainEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
-            <span class="enrollment-name" :class="{ 'enrollment-name--owner': e.owner }">
+            <span class="enrollment-info">
+              <span class="enrollment-name" :class="{ 'enrollment-name--owner': e.owner }">
                 <SkillStar :skill="e.skill" />
                 <svg
                   v-if="e.friendId"
@@ -56,17 +57,20 @@
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                {{ e.name }}
+                <span class="enrollment-name__text">{{ e.name }}</span>
               </span>
+              <span v-if="(e.userId === profile.profile?.id && !isPast) || e.comingLater" class="enrollment-below">
+                <button
+                  v-if="e.userId === profile.profile?.id && !isPast"
+                  class="coming-toggle"
+                  :class="{ active: e.comingLater }"
+                  :disabled="comingLaterLoading"
+                  @click="handleToggleComingLater"
+                >Приду позднее</button>
+                <span v-else-if="e.comingLater" class="coming-badge">придёт позже</span>
+              </span>
+            </span>
             <span class="enrollment-side">
-              <button
-                v-if="e.userId === profile.profile?.id && !isPast"
-                class="coming-toggle"
-                :class="{ active: e.comingLater }"
-                :disabled="comingLaterLoading"
-                @click="handleToggleComingLater"
-              >Приду позднее</button>
-              <span v-else-if="e.comingLater" class="coming-badge">придёт позже</span>
               <button v-if="canCancel(e) && !isPast" class="btn-cancel" title="Отменить запись" aria-label="Отменить запись" @click="handleCancel(e)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -81,9 +85,8 @@
       <div v-if="waitlistEnrollments.length > 0" class="section">
         <h2>Резерв ({{ waitlistEnrollments.length }})</h2>
         <div class="enrollment-list">
-          <div v-for="(e, i) in waitlistEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
+          <div v-for="e in waitlistEnrollments" :key="e.userId ?? e.friendId" class="enrollment-item">
             <span class="enrollment-name">
-              <span class="waitlist-position">{{ i + 1 }}</span>
               <SkillStar :skill="e.skill" />
               <svg
                 v-if="e.friendId"
@@ -99,7 +102,7 @@
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              {{ e.name }}
+              <span class="enrollment-name__text">{{ e.name }}</span>
             </span>
             <span class="enrollment-side">
               <button v-if="canCancel(e) && !isPast" class="btn-cancel" title="Убрать из резерва" aria-label="Убрать из резерва" @click="handleCancel(e)">
@@ -114,7 +117,7 @@
       </div>
 
       <div v-if="!isPast && availableFriends.length > 0" class="section">
-        <h2>Добавить друга</h2>
+        <h2>Записать друга</h2>
         <div class="friend-list">
           <div v-for="f in availableFriends" :key="f.id" class="friend-item">
             <span>{{ f.name }}</span>
@@ -132,10 +135,10 @@
     <div v-if="tab === 'comments'" class="tab-content">
       <div class="section">
         <div class="comment-list">
-          <div v-for="c in enrollments.comments" :key="c.id" class="comment-item">
+          <div v-for="c in enrollments.comments" :key="c.id" class="comment-item" :class="{ 'comment-item--mine': c.userId === profile.profile?.id }">
             <div class="comment-head">
+              <span class="comment-author">{{ c.authorName }}</span>
               <span class="comment-date">{{ formatCommentDate(c.createdAt) }}</span>
-              <strong>{{ c.authorName }}:</strong>
             </div>
             <div class="comment-text">{{ c.text }}</div>
           </div>
@@ -348,13 +351,6 @@ h1 {
   margin: 0;
 }
 
-.actions {
-  margin-left: auto;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
 .slot-when {
   display: flex;
   flex-wrap: wrap;
@@ -378,10 +374,11 @@ h1 {
 }
 
 .enrollment-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  display: inline;
+}
+
+.enrollment-name :deep(.skill-star) {
+  margin-right: 0.4rem;
 }
 
 .enrollment-side {
@@ -389,6 +386,8 @@ h1 {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  margin-top: -6px;
+  margin-top: calc((1lh - 36px) / 2);
 }
 
 .enrollment-name--owner {
@@ -396,23 +395,11 @@ h1 {
   color: var(--color-muted);
 }
 
-.waitlist-position {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--color-product-soft, var(--color-primary-soft));
-  color: var(--color-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
 .friend-plus {
   width: 14px;
   height: 14px;
-  flex-shrink: 0;
+  margin-right: 0.3rem;
+  vertical-align: -0.15em;
   color: var(--color-muted);
   opacity: 0.45;
 }
@@ -530,6 +517,11 @@ h1 {
   font-weight: 600;
 }
 
+.tab-bar button .tab-count {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
 .section {
   margin-bottom: 1.5rem;
 }
@@ -545,7 +537,38 @@ h1 {
   gap: 0.3rem;
 }
 
-.enrollment-item, .friend-item, .comment-item {
+.enrollment-list {
+  gap: 0.1rem;
+}
+
+.comment-list {
+  gap: 0.6rem;
+}
+
+.enrollment-item {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--color-row-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  word-break: break-word;
+}
+
+.enrollment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.enrollment-below {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: calc(16px + 0.4rem);
+}
+
+.friend-item {
   padding: 0.6rem;
   border-bottom: 1px solid var(--color-row-border);
   display: flex;
@@ -565,7 +588,7 @@ h1 {
   border: none;
   border-radius: 50%;
   background: none;
-  color: var(--color-danger);
+  color: #a57f6e;
   cursor: pointer;
 }
 
@@ -576,6 +599,7 @@ h1 {
 .btn-cancel svg {
   width: 18px;
   height: 18px;
+  stroke-width: 4;
 }
 
 .btn-add-friend {
@@ -603,20 +627,41 @@ h1 {
 }
 
 .comment-item {
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.2rem;
+  gap: 0.4rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  word-break: break-word;
+}
+
+.comment-item--mine {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
 }
 
 .comment-head {
   display: flex;
-  gap: 0.4rem;
+  justify-content: space-between;
   align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.comment-author {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .comment-date {
+  flex-shrink: 0;
   color: var(--color-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .comment-text {
