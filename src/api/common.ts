@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosError, AxiosResponse } from 'axios'
 import { AuthHttpClient, SsoService } from '@bogdanovmn/ssofw'
-import { logout } from '@/logout'
+import { handleAuthFailure } from '@/logout'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -23,7 +23,7 @@ const ssoService = new SsoService(import.meta.env.VITE_SSO_SERVICE_URL)
 export const authApi = new AuthHttpClient(
   apiUrl,
   ssoService,
-  () => { logout(ssoService) }
+  () => { handleAuthFailure(ssoService) }
 )
 
 export const makeApiRequest = async <T>(
