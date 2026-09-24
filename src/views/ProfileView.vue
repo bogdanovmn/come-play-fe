@@ -15,10 +15,8 @@
       <div class="info-card">
         <div class="setting-head">
           <h2>Отображаемое имя</h2>
-          <span class="hint-area">
-            <button class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('name')">?</button>
-            <div v-if="hintOpen === 'name'" class="hint-popup">Имя, которое увидят другие игроки в списках участников клуба и в записи на тренировку.</div>
-          </span>
+          <button ref="nameHintBtn" class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('name')">?</button>
+          <div v-if="hintOpen === 'name'" class="hint-popup" data-hint="name" :style="hintStyle">Имя, которое увидят другие игроки в списках участников клуба и в записи на тренировку.</div>
         </div>
         <input v-model="displayName" class="setting-input" placeholder="Ваше имя" maxlength="50" />
       </div>
@@ -26,14 +24,13 @@
       <div class="info-card">
         <div class="setting-head">
           <h2>Уровень игры</h2>
-          <span class="hint-area">
-            <button class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('skill')">?</button>
-            <div v-if="hintOpen === 'skill'" class="hint-popup">Укажите свой уровень для каждого вида спорта. Бейдж с вашим уровнем показывается рядом с именем в списке участников клуба и в записи на тренировку — у клубов и тренировок того же вида спорта.</div>
-          </span>
+          <button ref="skillHintBtn" class="hint-btn" title="Подсказка" aria-label="Подсказка" @click.stop="toggleHint('skill')">?</button>
+          <div v-if="hintOpen === 'skill'" class="hint-popup" data-hint="skill" :style="hintStyle">Укажите свой уровень для каждого вида спорта. Бейдж с вашим уровнем показывается рядом с именем в списке участников клуба и в записи на тренировку — у клубов и тренировок того же вида спорта.</div>
         </div>
         <div v-if="sportTypes.isLoading" class="loading">Загрузка...</div>
+        <div v-else-if="skillTypes.length === 0" class="empty">Уровни появятся после вступления в клуб.</div>
         <div v-else class="skill-list">
-          <div v-for="s in sportTypeOptions" :key="s.id" class="skill-row">
+          <div v-for="s in skillTypes" :key="s.id" class="skill-row">
             <span class="skill-name">{{ s.name }}</span>
             <select class="skill-select" :value="skillEditFor(s.id)" @change="onSkillEdit(s.id, ($event.target as HTMLSelectElement).value as string)">
               <option value="">Не указан</option>
@@ -106,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { profileStore } from '@/stores/profile'
 import { clubsStore } from '@/stores/clubs'
@@ -123,6 +120,9 @@ const activeTab = ref<'about' | 'friends' | 'clubs'>('about')
 const displayName = ref('')
 const skillEdits = ref<Record<number, SkillLevel | ''>>({})
 const hintOpen = ref<'name' | 'skill' | null>(null)
+const hintStyle = ref<Record<string, string> | null>(null)
+const nameHintBtn = ref<HTMLButtonElement | null>(null)
+const skillHintBtn = ref<HTMLButtonElement | null>(null)
 const saving = ref(false)
 const newFriendName = ref('')
 const showCreateClub = ref(false)
@@ -131,12 +131,20 @@ const newClubSportTypeId = ref<number | null>(null)
 
 const sportTypeOptions = computed(() => sportTypes.sportTypes)
 
+const skillTypes = computed(() => {
+  const ids = new Set<number>()
+  for (const c of clubs.memberClubs) ids.add(c.sportTypeId)
+  for (const c of clubs.ownedClubs) ids.add(c.sportTypeId)
+  return sportTypes.sportTypes.filter(s => ids.has(s.id))
+})
+
 onMounted(async () => {
   await Promise.all([
     profile.loadProfile(),
     profile.loadFriends(),
     profile.loadSkills(),
     clubs.loadOwned(),
+    clubs.loadMember(),
     sportTypes.load()
   ])
   if (profile.profile) {
@@ -149,10 +157,14 @@ onMounted(async () => {
     newClubSportTypeId.value = sportTypes.sportTypes[0].id
   }
   document.addEventListener('click', onDocumentClick)
+  window.addEventListener('scroll', onDocumentClick, true)
+  window.addEventListener('resize', onDocumentClick)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
+  window.removeEventListener('scroll', onDocumentClick, true)
+  window.removeEventListener('resize', onDocumentClick)
 })
 
 function onDocumentClick() {
@@ -160,7 +172,27 @@ function onDocumentClick() {
 }
 
 function toggleHint(which: 'name' | 'skill') {
-  hintOpen.value = hintOpen.value === which ? null : which
+  if (hintOpen.value === which) {
+    hintOpen.value = null
+    return
+  }
+  hintOpen.value = which
+  nextTick(() => {
+    const btn = which === 'name' ? nameHintBtn.value : skillHintBtn.value
+    const popup = document.querySelector<HTMLElement>(`.hint-popup[data-hint="${which}"]`)
+    if (!btn || !popup) return
+    const rect = btn.getBoundingClientRect()
+    const popupWidth = popup.offsetWidth
+    const viewportWidth = window.innerWidth
+    let left = rect.left
+    if (left + popupWidth > viewportWidth - 8) {
+      left = Math.max(8, viewportWidth - popupWidth - 8)
+    }
+    hintStyle.value = {
+      left: `${Math.round(left)}px`,
+      top: `${Math.round(rect.bottom + 6)}px`
+    }
+  })
 }
 
 function skillValueFor(sportTypeId: number): SkillLevel | null {
@@ -178,7 +210,7 @@ function onSkillEdit(sportTypeId: number, value: string) {
 const hasChanges = computed(() => {
   const savedName = profile.profile?.displayName ?? ''
   if (displayName.value.trim() !== savedName.trim()) return true
-  return sportTypes.sportTypes.some(s => {
+  return skillTypes.value.some(s => {
     const edited = skillEdits.value[s.id] ?? ''
     const saved = skillValueFor(s.id) ?? ''
     return edited !== saved
@@ -189,7 +221,7 @@ async function handleSave() {
   if (saving.value) return
   saving.value = true
   try {
-    const sportSkills = sportTypes.sportTypes.map(s => ({
+    const sportSkills = skillTypes.value.map(s => ({
       sportTypeId: s.id,
       skill: (skillEdits.value[s.id] ?? '') === '' ? null : (skillEdits.value[s.id] as SkillLevel)
     }))
@@ -291,11 +323,6 @@ h1 {
   color: var(--color-muted);
 }
 
-.hint-area {
-  position: relative;
-  display: inline-flex;
-}
-
 .hint-btn {
   display: inline-flex;
   align-items: center;
@@ -321,9 +348,7 @@ h1 {
 }
 
 .hint-popup {
-  position: absolute;
-  top: 1.7rem;
-  right: 0;
+  position: fixed;
   z-index: 10;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
