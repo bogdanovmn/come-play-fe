@@ -88,6 +88,7 @@ async function handleLogout() {
 #app {
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-height: 100vh;
 }
 
@@ -170,7 +171,9 @@ async function handleLogout() {
 
 .content {
   flex: 1;
+  width: 100%;
   max-width: 1200px;
+  min-width: 0;
   margin: 1rem auto;
   padding: 0 1rem;
 }
