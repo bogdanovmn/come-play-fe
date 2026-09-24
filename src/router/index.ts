@@ -7,6 +7,7 @@ const router = createRouter({
   history: createWebHistory('/comeplay/'),
   routes: [
     { path: '/', component: HomeView },
+    { path: '/faq', component: () => import('@/views/FaqView.vue') },
     {
       path: '/login',
       redirect: () => {
