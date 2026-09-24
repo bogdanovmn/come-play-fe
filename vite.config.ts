@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => {
       }
     },
     define: {
-      'import.meta.env.BACKEND_VERSION': JSON.stringify(process.env.BACKEND_VERSION || env.VITE_BACKEND_VERSION || 'dev'),
       'import.meta.env.FRONTEND_VERSION': JSON.stringify(process.env.FRONTEND_VERSION || env.VITE_FRONTEND_VERSION || 'dev')
     },
     base: '/comeplay/'

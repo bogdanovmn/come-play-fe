@@ -41,22 +41,23 @@
           </svg>
         </a>
       </div>
-      <span class="footer-version">версия: {{ backendVersion }} / {{ frontendVersion }}</span>
+      <span class="footer-version">версия: {{ backendVersion || '—' }} / {{ frontendVersion }}</span>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '@/stores/auth'
 import { logout } from '@/logout'
+import { getBackendVersion } from '@/api'
 import { SsoService } from '@bogdanovmn/ssofw'
 
 const router = useRouter()
 const auth = authStore()
 const ssoService = inject<SsoService>('ssoService')!
-const backendVersion = import.meta.env.BACKEND_VERSION
+const backendVersion = ref<string | null>(null)
 const frontendVersion = import.meta.env.FRONTEND_VERSION
 
 function initials(name: string): string {
@@ -72,7 +73,17 @@ function initials(name: string): string {
 
 onMounted(() => {
   auth.update()
+  loadBackendVersion()
 })
+
+async function loadBackendVersion() {
+  try {
+    const data = await getBackendVersion()
+    backendVersion.value = data.version
+  } catch (error) {
+    backendVersion.value = null
+  }
+}
 
 function handleLogin() {
   router.push('/login')

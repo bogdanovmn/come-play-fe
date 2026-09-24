@@ -105,6 +105,10 @@ export interface SportType {
   name: string
 }
 
+export interface AppVersion {
+  version: string
+}
+
 export interface UserProfile {
   id: string
   displayName: string
@@ -381,6 +385,12 @@ export async function listSportTypes(): Promise<SportType[]> {
 
 export async function createSportType(name: string): Promise<SportType> {
   return authApi.post<SportType>('/sport-types', { name })
+}
+
+// ===================== VERSION API =====================
+
+export async function getBackendVersion(): Promise<AppVersion> {
+  return makeApiRequest<AppVersion>('get', '/version')
 }
 
 // ===================== HISTORY API =====================
